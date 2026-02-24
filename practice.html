@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1e">
+<title>Guitar Practice Tools</title>
+<style>
+:root {
+  --bg:#1a1a1e; --surface:#242428; --surface2:#2e2e34;
+  --text:#e8e6e3; --text-dim:#8a8a8e;
+  --fret-wire:#b8a89a; --nut:#f5f0e8;
+  --root:#e63946; --m2:#f4a261; --M2:#f4a261;
+  --m3:#2a9d8f; --M3:#2a9d8f; --P4:#457b9d; --TT:#9b5de5;
+  --P5:#e9c46a; --m6:#f77f00; --M6:#f77f00; --m7:#06d6a0; --M7:#06d6a0;
+  --accent:#e63946; --accent2:#457b9d;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Mono','Menlo','Consolas',monospace;min-height:100vh;-webkit-tap-highlight-color:transparent}
+.app{max-width:1440px;margin:0 auto;padding:16px}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px}
+.tab{background:none;border:none;color:var(--text-dim);font-family:inherit;font-size:0.8rem;padding:8px 16px;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab.active{color:var(--accent);background:rgba(230,57,70,0.1);border-bottom:2px solid var(--accent)}
+.tab-panel{display:none} .tab-panel.active{display:block}
+
+/* ── Header / Controls ── */
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#ff6b7a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;box-shadow:0 3px 12px rgba(230,57,70,0.3)}
+h1{font-size:1rem;font-weight:700} h1 span{color:var(--text-dim);font-weight:400;font-size:0.72rem;margin-left:6px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.control-group{display:flex;flex-direction:column;gap:2px}
+.control-group label{font-size:0.58rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim)}
+select,.ctrl-btn{
+  background:var(--surface2);color:var(--text);border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:6px 26px 6px 8px;font-family:inherit;font-size:0.8rem;
+  cursor:pointer;appearance:none;min-width:110px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a8e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(230,57,70,0.15)}
+
+/* ── Fretboard (shared) ── */
+.fretboard-container{background:var(--surface);border-radius:12px;padding:12px 10px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 6px 24px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.04)}
+.fretboard-inner{min-width:fit-content}
+.fret-numbers{display:flex;margin-bottom:3px;user-select:none;min-width:fit-content}
+.fret-numbers:last-of-type{margin-bottom:0;margin-top:3px}
+.fret-numbers .spacer{width:36px;min-width:36px}
+.fret-numbers span{width:50px;min-width:50px;text-align:center;font-size:0.6rem;color:var(--text-dim);position:relative}
+.fret-numbers span.has-dot::after{content:'●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25)}
+.fret-numbers span.has-double::after{content:'● ●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25);letter-spacing:2px}
+.fret-numbers span.has-dot-top::before{content:'●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25)}
+.fret-numbers span.has-double-top::before{content:'● ●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25);letter-spacing:2px}
+
+.fretboard{position:relative;background:linear-gradient(180deg,#3d2114 0%,#2c1810 30%,#241209 70%,#1e0f08 100%);border-radius:6px;padding:10px 0;overflow:visible;min-width:fit-content}
+.dot-markers{display:flex;height:0;position:relative;pointer-events:none;min-width:fit-content}
+.dot-markers .spacer{width:36px;min-width:36px}
+.dot-markers .dm-cell{width:50px;min-width:50px;position:relative;height:0}
+.dot-markers .dm-cell .dot{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(255,255,250,0.25) 0%,rgba(220,215,200,0.18) 40%,rgba(180,175,165,0.12) 70%,rgba(160,155,145,0.08) 100%);box-shadow:inset 0 1px 2px rgba(255,255,255,0.15);left:50%;transform:translateX(-50%);border:1px solid rgba(255,255,255,0.06)}
+.string-row{display:flex;align-items:center;height:34px;position:relative;min-width:fit-content}
+.string-label{width:36px;min-width:36px;text-align:center;font-size:0.62rem;font-weight:600;color:var(--text-dim);z-index:2}
+.fret-cell{width:50px;min-width:50px;height:34px;position:relative;display:flex;align-items:center;justify-content:center}
+.fret-cell.nut::after{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;background:var(--nut);border-radius:1px;box-shadow:2px 0 6px rgba(0,0,0,0.4);z-index:1}
+.fret-cell:not(.nut)::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,rgba(200,185,170,0.4),var(--fret-wire),rgba(200,185,170,0.4));z-index:1}
+.string-row .string-line{position:absolute;left:36px;right:0;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none}
+
+.note-dot{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:0.56rem;font-weight:700;z-index:3;position:relative;
+  transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),filter 0.2s;cursor:pointer;
+  text-shadow:0 1px 2px rgba(0,0,0,0.3);
+  box-shadow:0 2px 6px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.2);
+  animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) backwards;
+  line-height:1;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;
+}
+.note-dot:hover{transform:scale(1.25);z-index:10}
+.note-dot.playing{transform:scale(1.35);filter:brightness(1.3);box-shadow:0 0 14px 3px currentColor,0 2px 6px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.2)}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+.note-dot.root{background:var(--root);color:#fff;width:28px;height:28px;font-size:0.6rem}
+.note-dot.m2{background:var(--m2);color:#1a1a1e} .note-dot.M2{background:var(--M2);color:#1a1a1e}
+.note-dot.m3{background:var(--m3);color:#fff} .note-dot.M3{background:var(--M3);color:#fff}
+.note-dot.P4{background:var(--P4);color:#fff} .note-dot.TT{background:var(--TT);color:#fff}
+.note-dot.P5{background:var(--P5);color:#1a1a1e}
+.note-dot.m6{background:var(--m6);color:#1a1a1e} .note-dot.M6{background:var(--M6);color:#1a1a1e}
+.note-dot.m7{background:var(--m7);color:#1a1a1e} .note-dot.M7{background:var(--M7);color:#1a1a1e}
+
+/* Comparison: second scale as diamond */
+.note-dot.compare{border-radius:4px;transform:rotate(45deg);opacity:0.85}
+.note-dot.compare span{transform:rotate(-45deg);display:block}
+/* Both scales overlap */
+.note-dot.overlap{box-shadow:0 0 0 3px rgba(255,255,255,0.5),0 2px 6px rgba(0,0,0,0.35)}
+
+.legend{margin-top:10px;display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:4px;background:var(--surface2);padding:4px 8px;border-radius:16px;font-size:0.6rem;border:1px solid rgba(255,255,255,0.04)}
+.legend-swatch{width:11px;height:11px;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+
+/* ── Auto-play controls ── */
+.playback-controls{display:flex;align-items:center;gap:8px;margin:12px 0;flex-wrap:wrap;justify-content:center}
+.play-btn{
+  background:var(--accent);color:#fff;border:none;border-radius:50%;
+  width:40px;height:40px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 12px rgba(230,57,70,0.3);transition:transform 0.15s,box-shadow 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.play-btn:hover{transform:scale(1.1)} .play-btn:active{transform:scale(0.95)}
+.play-btn.playing-btn{background:var(--text-dim)}
+.tempo-control{display:flex;align-items:center;gap:6px;font-size:0.72rem;color:var(--text-dim)}
+.tempo-slider{-webkit-appearance:none;width:100px;height:4px;background:var(--surface2);border-radius:2px;outline:none}
+.tempo-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+.direction-btn{background:var(--surface2);color:var(--text-dim);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:6px 10px;font-family:inherit;font-size:0.7rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.direction-btn.active{background:rgba(230,57,70,0.15);border-color:var(--accent);color:var(--accent)}
+
+.vol-control{display:flex;align-items:center;gap:4px}
+.vol-slider{-webkit-appearance:none;width:60px;height:4px;background:var(--surface2);border-radius:2px;outline:none}
+.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.4)}
+
+/* ── Interval Trainer ── */
+.trainer-area{text-align:center;padding:20px 0}
+.trainer-question{font-size:1.5rem;font-weight:700;margin:16px 0;min-height:60px;display:flex;align-items:center;justify-content:center;gap:16px}
+.trainer-note{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.3)}
+.trainer-arrow{color:var(--text-dim);font-size:1.5rem}
+.trainer-options{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0}
+.trainer-opt{
+  background:var(--surface2);color:var(--text);border:2px solid rgba(255,255,255,0.08);
+  border-radius:10px;padding:10px 16px;font-family:inherit;font-size:0.82rem;
+  cursor:pointer;transition:all 0.2s;min-width:80px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+.trainer-opt:hover{border-color:rgba(255,255,255,0.2);background:var(--surface)}
+.trainer-opt.correct{border-color:#06d6a0;background:rgba(6,214,160,0.15);color:#06d6a0}
+.trainer-opt.wrong{border-color:var(--root);background:rgba(230,57,70,0.15);color:var(--root)}
+.trainer-score{font-size:0.8rem;color:var(--text-dim);margin-top:12px}
+.trainer-score strong{color:var(--text);font-size:1rem}
+.trainer-feedback{font-size:1.2rem;margin:8px 0;min-height:32px}
+.new-question-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:inherit;font-size:0.85rem;cursor:pointer;margin-top:12px;-webkit-tap-highlight-color:transparent}
+.listen-btn{background:var(--accent2);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px rgba(69,123,157,0.3)}
+
+/* ── Compare legend ── */
+.compare-legend{display:flex;gap:12px;justify-content:center;margin:8px 0;font-size:0.7rem;color:var(--text-dim)}
+.compare-legend .cl-item{display:flex;align-items:center;gap:4px}
+.cl-circle{width:14px;height:14px;border-radius:50%;border:2px solid var(--text-dim)}
+.cl-diamond{width:12px;height:12px;border-radius:2px;transform:rotate(45deg);border:2px solid var(--text-dim)}
+.cl-both{width:14px;height:14px;border-radius:50%;border:2px solid var(--text-dim);box-shadow:0 0 0 2px rgba(255,255,255,0.5)}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  .app{padding:10px}
+  header{flex-direction:column;align-items:stretch;gap:8px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+  select{min-width:0;width:100%;font-size:16px;padding:8px 26px 8px 8px}
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tab{font-size:0.72rem;padding:6px 12px;white-space:nowrap}
+  .fret-numbers .spacer,.dot-markers .spacer,.string-label{width:28px;min-width:28px;font-size:0.55rem}
+  .fret-numbers span{width:42px;min-width:42px;font-size:0.52rem}
+  .dot-markers .dm-cell{width:42px;min-width:42px}
+  .fret-cell{width:42px;min-width:42px;height:32px} .string-row{height:32px}
+  .string-row .string-line{left:28px}
+  .note-dot{width:24px;height:24px;font-size:0.5rem}
+  .note-dot.root{width:26px;height:26px;font-size:0.54rem}
+}
+  /* ── Site Nav ── */
+  .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
+  .nav-link{color:var(--text-dim);text-decoration:none;font-family:-apple-system,'SF Mono','Menlo',monospace;font-size:0.75rem;padding:6px 14px;border-radius:8px;background:var(--surface2);border:1px solid rgba(255,255,255,0.04);transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+  .nav-link:hover{color:var(--text);border-color:rgba(255,255,255,0.12)}
+  .nav-link.active{color:#e63946;background:rgba(230,57,70,0.1);border-color:#e63946}
+  @media(max-width:768px){.site-nav{padding:8px 10px}.nav-link{font-size:0.68rem;padding:5px 10px}}
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <a href="index.html" class="nav-link">🎸 Fretboard</a>
+  <a href="practice.html" class="nav-link active">🎵 Practice</a>
+  <a href="theory.html" class="nav-link">📖 Theory</a>
+</nav>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">♮</div>
+      <h1>Practice Tools <span>/ 練習ツール</span></h1>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('autoplay')">🎵 スケール再生</button>
+    <button class="tab" onclick="switchTab('compare')">🔀 スケール比較</button>
+    <button class="tab" onclick="switchTab('interval')">🎯 インターバル</button>
+  </div>
+
+  <!-- ════ Tab 1: Auto-play ════ -->
+  <div class="tab-panel active" id="panel-autoplay">
+    <div class="controls" style="margin-bottom:10px">
+      <div class="control-group"><label>Key</label><select id="ap-key"></select></div>
+      <div class="control-group"><label>Scale</label><select id="ap-scale"></select></div>
+      <div class="control-group"><label>Strings</label>
+        <select id="ap-strings"><option value="6">6弦</option><option value="7">7弦</option></select>
+      </div>
+      <div class="control-group"><label>Frets</label>
+        <select id="ap-frets"><option value="12">12</option><option value="15" selected>15</option><option value="17">17</option><option value="22">22</option><option value="24">24</option></select>
+      </div>
+    </div>
+    <div class="playback-controls">
+      <button class="play-btn" id="ap-play" onclick="toggleAutoPlay()">▶</button>
+      <div class="tempo-control">
+        <span>BPM</span>
+        <input type="range" class="tempo-slider" id="ap-tempo" min="40" max="200" value="100">
+        <span id="ap-tempo-val">100</span>
+      </div>
+      <button class="direction-btn active" id="ap-dir-up" onclick="setDirection('up')">↑ 上昇</button>
+      <button class="direction-btn" id="ap-dir-down" onclick="setDirection('down')">↓ 下降</button>
+      <button class="direction-btn" id="ap-dir-both" onclick="setDirection('both')">↕ 往復</button>
+      <div class="vol-control">
+        <span>🔊</span>
+        <input type="range" class="vol-slider" id="ap-vol" min="0" max="100" value="50">
+      </div>
+    </div>
+    <div class="fretboard-container">
+      <div class="fretboard-inner">
+        <div class="fret-numbers" id="ap-fretNums"></div>
+        <div class="fretboard" id="ap-fretboard"></div>
+        <div class="fret-numbers" id="ap-fretNumsB"></div>
+      </div>
+    </div>
+    <div class="legend" id="ap-legend"></div>
+  </div>
+
+  <!-- ════ Tab 2: Scale Compare ════ -->
+  <div class="tab-panel" id="panel-compare">
+    <div class="controls" style="margin-bottom:10px">
+      <div class="control-group"><label>Key</label><select id="cmp-key"></select></div>
+      <div class="control-group"><label>Scale A (●)</label><select id="cmp-scaleA"></select></div>
+      <div class="control-group"><label>Scale B (◆)</label><select id="cmp-scaleB"></select></div>
+      <div class="control-group"><label>Strings</label>
+        <select id="cmp-strings"><option value="6">6弦</option><option value="7">7弦</option></select>
+      </div>
+      <div class="control-group"><label>Frets</label>
+        <select id="cmp-frets"><option value="12">12</option><option value="15" selected>15</option><option value="17">17</option><option value="22">22</option><option value="24">24</option></select>
+      </div>
+    </div>
+    <div class="compare-legend">
+      <div class="cl-item"><div class="cl-circle" style="background:var(--root)"></div> Scale Aのみ</div>
+      <div class="cl-item"><div class="cl-diamond" style="background:var(--accent2)"></div> Scale Bのみ</div>
+      <div class="cl-item"><div class="cl-both" style="background:var(--P5)"></div> 共通音</div>
+    </div>
+    <div class="fretboard-container">
+      <div class="fretboard-inner">
+        <div class="fret-numbers" id="cmp-fretNums"></div>
+        <div class="fretboard" id="cmp-fretboard"></div>
+        <div class="fret-numbers" id="cmp-fretNumsB"></div>
+      </div>
+    </div>
+    <div id="cmp-info" style="text-align:center;margin-top:10px;font-size:0.75rem;color:var(--text-dim)"></div>
+  </div>
+
+  <!-- ════ Tab 3: Interval Trainer ════ -->
+  <div class="tab-panel" id="panel-interval">
+    <div class="trainer-area">
+      <p style="color:var(--text-dim);font-size:0.8rem">2つの音のインターバル（音程）を当てよう</p>
+      <div class="trainer-question" id="iv-question"></div>
+      <div style="margin:8px 0">
+        <button class="listen-btn" onclick="replayInterval()" title="もう一度聴く">🔊</button>
+      </div>
+      <div class="trainer-feedback" id="iv-feedback"></div>
+      <div class="trainer-options" id="iv-options"></div>
+      <div class="trainer-score">
+        スコア: <strong id="iv-correct">0</strong> / <span id="iv-total">0</span>
+        <span id="iv-streak" style="margin-left:12px;color:var(--accent)"></span>
+      </div>
+      <button class="new-question-btn" id="iv-next" onclick="newInterval()" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Shared Data ──
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_MAP={'C#':'D♭','D#':'E♭','F#':'G♭','G#':'A♭','A#':'B♭'};
+const TUNING_6=[4,9,2,7,11,4],NAMES_6=['E','A','D','G','B','e'],WIDTHS_6=[2.8,2.3,1.8,1.4,1.1,0.9],COLORS_6=['#928880','#9c9286','#a69c90','#b0a69a','#bab0a4','#c4b8ac'];
+const TUNING_7=[11,4,9,2,7,11,4],NAMES_7=['B','E','A','D','G','B','e'],WIDTHS_7=[3.2,2.8,2.3,1.8,1.4,1.1,0.9],COLORS_7=['#88807a','#928880','#9c9286','#a69c90','#b0a69a','#bab0a4','#c4b8ac'];
+const FREQ_6=[82.41,110,146.83,196,246.94,329.63],FREQ_7=[61.74,82.41,110,146.83,196,246.94,329.63];
+const SCALES={
+  'Major / メジャー':{i:[0,2,4,5,7,9,11],d:['R','M2','M3','P4','P5','M6','M7']},
+  'Natural Minor / ナチュラルマイナー':{i:[0,2,3,5,7,8,10],d:['R','M2','m3','P4','P5','m6','m7']},
+  'Harmonic Minor / ハーモニックマイナー':{i:[0,2,3,5,7,8,11],d:['R','M2','m3','P4','P5','m6','M7']},
+  'Melodic Minor / メロディックマイナー':{i:[0,2,3,5,7,9,11],d:['R','M2','m3','P4','P5','M6','M7']},
+  'Major Penta / メジャーペンタ':{i:[0,2,4,7,9],d:['R','M2','M3','P5','M6']},
+  'Minor Penta / マイナーペンタ':{i:[0,3,5,7,10],d:['R','m3','P4','P5','m7']},
+  'Blues / ブルース':{i:[0,3,5,6,7,10],d:['R','m3','P4','TT','P5','m7']},
+  'Dorian / ドリアン':{i:[0,2,3,5,7,9,10],d:['R','M2','m3','P4','P5','M6','m7']},
+  'Mixolydian / ミクソリディアン':{i:[0,2,4,5,7,9,10],d:['R','M2','M3','P4','P5','M6','m7']},
+  'Phrygian / フリジアン':{i:[0,1,3,5,7,8,10],d:['R','m2','m3','P4','P5','m6','m7']},
+  'Lydian / リディアン':{i:[0,2,4,6,7,9,11],d:['R','M2','M3','TT','P5','M6','M7']},
+  'Locrian / ロクリアン':{i:[0,1,3,5,6,8,10],d:['R','m2','m3','P4','TT','m6','m7']},
+};
+const DCSS={'R':'root','m2':'m2','M2':'M2','m3':'m3','M3':'M3','P4':'P4','TT':'TT','P5':'P5','m6':'m6','M6':'M6','m7':'m7','M7':'M7'};
+const DJP={'R':'ルート','m2':'短2','M2':'長2','m3':'短3','M3':'長3','P4':'完全4','TT':'トライトーン','P5':'完全5','m6':'短6','M6':'長6','m7':'短7','M7':'長7'};
+const FRET_S=new Set([3,5,7,9,15,17,19,21]),FRET_D=new Set([12,24]);
+
+const INTERVALS=[
+  {st:0,name:'P1 / 完全1度'},{st:1,name:'m2 / 短2度'},{st:2,name:'M2 / 長2度'},
+  {st:3,name:'m3 / 短3度'},{st:4,name:'M3 / 長3度'},{st:5,name:'P4 / 完全4度'},
+  {st:6,name:'TT / トライトーン'},{st:7,name:'P5 / 完全5度'},{st:8,name:'m6 / 短6度'},
+  {st:9,name:'M6 / 長6度'},{st:10,name:'m7 / 短7度'},{st:11,name:'M7 / 長7度'},
+  {st:12,name:'P8 / オクターブ'},
+];
+
+// ── Audio ──
+let audioCtx=null;
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+
+function playFreq(freq,vol=0.2){
+  const ctx=getCtx(),now=ctx.currentTime;
+  const m=ctx.createGain();m.connect(ctx.destination);
+  m.gain.setValueAtTime(0,now);m.gain.linearRampToValueAtTime(vol,now+0.008);
+  m.gain.exponentialRampToValueAtTime(vol*0.6,now+0.08);
+  m.gain.exponentialRampToValueAtTime(vol*0.3,now+0.4);
+  m.gain.exponentialRampToValueAtTime(0.001,now+1.8);
+  [{r:1,g:1},{r:2,g:.5},{r:3,g:.25},{r:4,g:.15},{r:5,g:.08}].forEach(h=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='triangle';o.frequency.setValueAtTime(freq*h.r,now);
+    g.gain.setValueAtTime(h.g,now);o.connect(g);g.connect(m);o.start(now);o.stop(now+2);
+  });
+}
+
+function playString(nStr,sIdx,fret,vol){
+  const freqs=+nStr===7?FREQ_7:FREQ_6;
+  playFreq(freqs[sIdx]*Math.pow(2,fret/12),vol);
+}
+
+// ── Tab switching ──
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`.tab-panel#panel-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='interval'&&ivTotal===0) newInterval();
+}
+
+// ── Populate selects ──
+function fillKeySelect(el){
+  NOTES.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=FLAT_MAP[n]?`${n}/${FLAT_MAP[n]}`:n;el.appendChild(o)});
+}
+function fillScaleSelect(el){
+  Object.keys(SCALES).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;el.appendChild(o)});
+}
+
+// ── Fretboard renderer ──
+function renderFretboard(fbId,fnId,fnBId,nStr,key,scaleData,maxF=15,opts={}){
+  const tuning=+nStr===7?TUNING_7:TUNING_6,names=+nStr===7?NAMES_7:NAMES_6,
+        widths=+nStr===7?WIDTHS_7:WIDTHS_6,colors=+nStr===7?COLORS_7:COLORS_6,
+        ns=+nStr;
+  const map=new Map();
+  scaleData.i.forEach((iv,idx)=>map.set((key+iv)%12,scaleData.d[idx]));
+
+  // Compare mode
+  let mapB=null,setA=new Set(),setB=new Set();
+  if(opts.scaleB){
+    mapB=new Map();
+    opts.scaleB.i.forEach((iv,idx)=>mapB.set((key+iv)%12,opts.scaleB.d[idx]));
+    scaleData.i.forEach(iv=>setA.add((key+iv)%12));
+    opts.scaleB.i.forEach(iv=>setB.add((key+iv)%12));
+  }
+
+  // Fret numbers
+  [fnId,fnBId].forEach((id,idx)=>{
+    const el=document.getElementById(id);el.innerHTML='<div class="spacer"></div>';
+    for(let f=0;f<=maxF;f++){
+      const s=document.createElement('span');s.textContent=f;
+      if(idx===0){if(FRET_D.has(f))s.className='has-double';else if(FRET_S.has(f))s.className='has-dot';}
+      else{if(FRET_D.has(f))s.className='has-double-top';else if(FRET_S.has(f))s.className='has-dot-top';}
+      el.appendChild(s);
+    }
+  });
+
+  const fb=document.getElementById(fbId);fb.innerHTML='';
+  const strH=34,totalH=ns*strH,midY=totalH/2-17,dd1=totalH*.25,dd2=totalH*.75;
+  const dm=document.createElement('div');dm.className='dot-markers';dm.innerHTML='<div class="spacer"></div>';
+  for(let f=0;f<=maxF;f++){
+    const c=document.createElement('div');c.className='dm-cell';
+    if(FRET_S.has(f))c.innerHTML=`<div class="dot" style="top:${midY}px"></div>`;
+    else if(FRET_D.has(f))c.innerHTML=`<div class="dot" style="top:${dd1}px"></div><div class="dot" style="top:${dd2}px"></div>`;
+    dm.appendChild(c);
+  }
+  fb.appendChild(dm);
+
+  const allDots=[];
+  for(let s=ns-1;s>=0;s--){
+    const row=document.createElement('div');row.className='string-row';
+    const sl=document.createElement('div');sl.className='string-line';
+    sl.style.height=widths[s]+'px';sl.style.background=colors[s];sl.style.opacity='0.45';
+    row.appendChild(sl);
+    const lb=document.createElement('div');lb.className='string-label';lb.textContent=names[s];
+    row.appendChild(lb);
+
+    for(let f=0;f<=maxF;f++){
+      const cell=document.createElement('div');cell.className='fret-cell'+(f===0?' nut':'');
+      const ni=(tuning[s]+f)%12;
+
+      if(mapB){
+        // Compare mode
+        const inA=setA.has(ni),inB=setB.has(ni);
+        if(inA||inB){
+          const dot=document.createElement('div');
+          const nn=NOTES[ni];
+          if(inA&&inB){
+            dot.className='note-dot P5 overlap';
+            dot.textContent=nn;
+          } else if(inA){
+            const deg=map.get(ni);
+            dot.className=`note-dot ${DCSS[deg]}`;
+            dot.textContent=nn;
+          } else {
+            const deg=mapB.get(ni);
+            dot.className=`note-dot compare`;
+            dot.style.background=`var(--accent2)`;
+            dot.style.color='#fff';
+            dot.innerHTML=`<span>${nn}</span>`;
+          }
+          dot.style.animationDelay=`${f*10}ms`;
+          const si=s,fi=f,nStr2=nStr;
+          let touched=false;
+          dot.addEventListener('touchstart',e=>{e.preventDefault();touched=true;playString(nStr2,si,fi,0.2);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)},{passive:false});
+          dot.addEventListener('click',()=>{if(touched){touched=false;return}playString(nStr2,si,fi,0.2);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)});
+          cell.appendChild(dot);
+          allDots.push({dot,s,f,ni});
+        }
+      } else if(map.has(ni)){
+        const deg=map.get(ni);
+        const dot=document.createElement('div');
+        dot.className=`note-dot ${DCSS[deg]}`;
+        dot.textContent=NOTES[ni];
+        dot.style.animationDelay=`${(Math.abs(s-Math.floor(ns/2))*18+f*12)}ms`;
+        const si=s,fi=f,nStr2=nStr;
+        let touched=false;
+        dot.addEventListener('touchstart',e=>{e.preventDefault();touched=true;playString(nStr2,si,fi,0.2);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)},{passive:false});
+        dot.addEventListener('click',()=>{if(touched){touched=false;return}playString(nStr2,si,fi,0.2);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)});
+        cell.appendChild(dot);
+        allDots.push({dot,s,f,ni});
+      }
+      row.appendChild(cell);
+    }
+    fb.appendChild(row);
+  }
+  return allDots;
+}
+
+// ══════════════════════════════
+// Tab 1: Auto-play
+// ══════════════════════════════
+let apPlaying=false,apTimer=null,apDirection='up',apDots=[];
+
+function renderAutoPlay(){
+  const key=+document.getElementById('ap-key').value;
+  const sc=SCALES[document.getElementById('ap-scale').value];
+  const nStr=document.getElementById('ap-strings').value;
+  apDots=renderFretboard('ap-fretboard','ap-fretNums','ap-fretNumsB',nStr,key,sc,+document.getElementById('ap-frets').value);
+
+  // Build sorted sequence: ascending by string (low to high), then fret
+  apDots.sort((a,b)=>{
+    const freqA=(+nStr===7?FREQ_7:FREQ_6)[a.s]*Math.pow(2,a.f/12);
+    const freqB=(+nStr===7?FREQ_7:FREQ_6)[b.s]*Math.pow(2,b.f/12);
+    return freqA-freqB;
+  });
+
+  // Deduplicate by note index (keep lowest position for each unique pitch)
+  const seen=new Set();
+  const unique=[];
+  apDots.forEach(d=>{
+    const pitch=d.ni+Math.floor(((+nStr===7?TUNING_7:TUNING_6)[d.s]+d.f)/12)*12;
+    if(!seen.has(pitch)){seen.add(pitch);unique.push(d)}
+  });
+  apDots=unique;
+
+  const leg=document.getElementById('ap-legend');leg.innerHTML='';
+  const seenD=new Set();
+  sc.d.forEach(deg=>{if(seenD.has(deg))return;seenD.add(deg);
+    const item=document.createElement('div');item.className='legend-item';
+    item.innerHTML=`<div class="legend-swatch" style="background:var(--${DCSS[deg]})"></div>${deg} ${DJP[deg]}`;
+    leg.appendChild(item);
+  });
+}
+
+function toggleAutoPlay(){
+  if(apPlaying){stopAutoPlay();return}
+  apPlaying=true;
+  document.getElementById('ap-play').textContent='⏸';
+  document.getElementById('ap-play').classList.add('playing-btn');
+  playSequence();
+}
+
+function stopAutoPlay(){
+  apPlaying=false;clearTimeout(apTimer);
+  document.getElementById('ap-play').textContent='▶';
+  document.getElementById('ap-play').classList.remove('playing-btn');
+}
+
+function playSequence(){
+  if(!apPlaying||apDots.length===0)return;
+  const bpm=+document.getElementById('ap-tempo').value;
+  const delay=60000/bpm;
+  const vol=(+document.getElementById('ap-vol').value/100)*0.3;
+  const nStr=document.getElementById('ap-strings').value;
+
+  let seq=[...apDots];
+  if(apDirection==='down') seq.reverse();
+  else if(apDirection==='both') seq=[...apDots,...[...apDots].reverse().slice(1)];
+
+  let idx=0;
+  function step(){
+    if(!apPlaying||idx>=seq.length){stopAutoPlay();return}
+    const d=seq[idx];
+    playString(nStr,d.s,d.f,vol);
+    d.dot.classList.add('playing');
+    setTimeout(()=>d.dot.classList.remove('playing'),Math.min(delay*0.8,300));
+    idx++;
+    apTimer=setTimeout(step,delay);
+  }
+  step();
+}
+
+function setDirection(dir){
+  apDirection=dir;
+  ['up','down','both'].forEach(d=>{
+    document.getElementById('ap-dir-'+d).classList.toggle('active',d===dir);
+  });
+}
+
+// ══════════════════════════════
+// Tab 2: Compare
+// ══════════════════════════════
+function renderCompare(){
+  const key=+document.getElementById('cmp-key').value;
+  const scA=SCALES[document.getElementById('cmp-scaleA').value];
+  const scB=SCALES[document.getElementById('cmp-scaleB').value];
+  const nStr=document.getElementById('cmp-strings').value;
+  renderFretboard('cmp-fretboard','cmp-fretNums','cmp-fretNumsB',nStr,key,scA,+document.getElementById('cmp-frets').value,{scaleB:scB});
+
+  const notesA=new Set(scA.i.map(iv=>(key+iv)%12));
+  const notesB=new Set(scB.i.map(iv=>(key+iv)%12));
+  const common=[...notesA].filter(n=>notesB.has(n));
+  const nameA=document.getElementById('cmp-scaleA').value.split('/')[0].trim();
+  const nameB=document.getElementById('cmp-scaleB').value.split('/')[0].trim();
+  document.getElementById('cmp-info').innerHTML=
+    `${NOTES[key]} ${nameA} vs ${nameB} — 共通音: ${common.length}/${Math.max(notesA.size,notesB.size)} (${common.map(n=>NOTES[n]).join(', ')})`;
+}
+
+// ══════════════════════════════
+// Tab 3: Interval Trainer
+// ══════════════════════════════
+let ivCorrect=0,ivTotal=0,ivStreak=0,ivNote1=0,ivNote2=0,ivAnswer=-1;
+
+function newInterval(){
+  ivNote1=Math.floor(Math.random()*12);
+  const maxSt=12;
+  const st=Math.floor(Math.random()*(maxSt))+1; // 1-12 semitones
+  ivNote2=(ivNote1+st)%12;
+  ivAnswer=st;
+
+  const q=document.getElementById('iv-question');
+  const colors=['var(--root)','var(--m2)','var(--M2)','var(--m3)','var(--M3)','var(--P4)','var(--TT)','var(--P5)','var(--m6)','var(--M6)','var(--m7)','var(--M7)'];
+  q.innerHTML=`
+    <div class="trainer-note" style="background:${colors[ivNote1]}">${NOTES[ivNote1]}</div>
+    <span class="trainer-arrow">→</span>
+    <div class="trainer-note" style="background:${colors[ivNote2]}">${NOTES[ivNote2]}</div>`;
+
+  document.getElementById('iv-feedback').textContent='';
+  document.getElementById('iv-next').style.display='none';
+
+  // Play the two notes
+  setTimeout(()=>playInterval(),300);
+
+  // Generate options (correct + 3 wrong)
+  const opts=document.getElementById('iv-options');opts.innerHTML='';
+  const choices=new Set([st]);
+  while(choices.size<4){
+    const r=Math.floor(Math.random()*12)+1;
+    choices.add(r);
+  }
+  [...choices].sort((a,b)=>a-b).forEach(c=>{
+    const btn=document.createElement('button');
+    btn.className='trainer-opt';
+    btn.textContent=INTERVALS[c].name;
+    btn.addEventListener('click',()=>checkAnswer(c,btn));
+    opts.appendChild(btn);
+  });
+}
+
+function playInterval(){
+  const baseFreq=261.63; // C4
+  const f1=baseFreq*Math.pow(2,ivNote1/12);
+  const f2=baseFreq*Math.pow(2,((ivNote1+ivAnswer))/12);
+  playFreq(f1,0.2);
+  setTimeout(()=>playFreq(f2,0.2),500);
+}
+
+function replayInterval(){
+  playInterval();
+}
+
+function checkAnswer(chosen,btn){
+  ivTotal++;
+  document.querySelectorAll('.trainer-opt').forEach(b=>b.style.pointerEvents='none');
+
+  if(chosen===ivAnswer){
+    ivCorrect++;ivStreak++;
+    btn.classList.add('correct');
+    document.getElementById('iv-feedback').textContent='✅ 正解！';
+  } else {
+    ivStreak=0;
+    btn.classList.add('wrong');
+    // Highlight correct
+    document.querySelectorAll('.trainer-opt').forEach(b=>{
+      if(b.textContent===INTERVALS[ivAnswer].name) b.classList.add('correct');
+    });
+    document.getElementById('iv-feedback').textContent=`❌ 正解は ${INTERVALS[ivAnswer].name}`;
+  }
+
+  document.getElementById('iv-correct').textContent=ivCorrect;
+  document.getElementById('iv-total').textContent=ivTotal;
+  document.getElementById('iv-streak').textContent=ivStreak>=2?`🔥 ${ivStreak}連続！`:'';
+  document.getElementById('iv-next').style.display='inline-block';
+}
+
+// ── Init ──
+function init(){
+  // Populate selects
+  ['ap-key','cmp-key'].forEach(id=>fillKeySelect(document.getElementById(id)));
+  ['ap-scale','cmp-scaleA','cmp-scaleB'].forEach(id=>fillScaleSelect(document.getElementById(id)));
+
+  // Set compare B default to something different
+  document.getElementById('cmp-scaleB').selectedIndex=4; // Major Penta
+
+  // Event listeners
+  ['ap-key','ap-scale','ap-strings','ap-frets'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{stopAutoPlay();renderAutoPlay()}));
+  ['cmp-key','cmp-scaleA','cmp-scaleB','cmp-strings','cmp-frets'].forEach(id=>document.getElementById(id).addEventListener('change',renderCompare));
+
+  document.getElementById('ap-tempo').addEventListener('input',function(){document.getElementById('ap-tempo-val').textContent=this.value});
+
+  renderAutoPlay();
+  renderCompare();
+}
+
+init();
+</script>
+</body>
+</html>

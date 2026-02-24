@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a1e">
+<title>Guitar Theory Tools</title>
+<style>
+:root {
+  --bg:#1a1a1e; --surface:#242428; --surface2:#2e2e34;
+  --text:#e8e6e3; --text-dim:#8a8a8e;
+  --fret-wire:#b8a89a; --nut:#f5f0e8;
+  --root:#e63946; --m2:#f4a261; --M2:#f4a261;
+  --m3:#2a9d8f; --M3:#2a9d8f; --P4:#457b9d; --TT:#9b5de5;
+  --P5:#e9c46a; --m6:#f77f00; --M6:#f77f00; --m7:#06d6a0; --M7:#06d6a0;
+  --accent:#e63946; --accent2:#457b9d;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Mono','Menlo','Consolas',monospace;min-height:100vh;-webkit-tap-highlight-color:transparent}
+.app{max-width:1440px;margin:0 auto;padding:16px}
+
+.tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:8px;overflow-x:auto}
+.tab{background:none;border:none;color:var(--text-dim);font-family:inherit;font-size:0.8rem;padding:8px 16px;cursor:pointer;border-radius:8px 8px 0 0;transition:all 0.2s;-webkit-tap-highlight-color:transparent;white-space:nowrap}
+.tab:hover{color:var(--text);background:var(--surface2)}
+.tab.active{color:var(--accent);background:rgba(230,57,70,0.1);border-bottom:2px solid var(--accent)}
+.tab-panel{display:none} .tab-panel.active{display:block}
+
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:8px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent2),#6ba3c7);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;box-shadow:0 3px 12px rgba(69,123,157,0.3)}
+h1{font-size:1rem;font-weight:700} h1 span{color:var(--text-dim);font-weight:400;font-size:0.72rem;margin-left:6px}
+
+.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.control-group{display:flex;flex-direction:column;gap:2px}
+.control-group label{font-size:0.58rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim)}
+select{
+  background:var(--surface2);color:var(--text);border:1px solid rgba(255,255,255,0.08);
+  border-radius:8px;padding:6px 26px 6px 8px;font-family:inherit;font-size:0.8rem;
+  cursor:pointer;appearance:none;min-width:110px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a8e' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+}
+select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(230,57,70,0.15)}
+
+/* ── Fretboard (shared) ── */
+.fretboard-container{background:var(--surface);border-radius:12px;padding:12px 10px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:0 6px 24px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.04)}
+.fretboard-inner{min-width:fit-content}
+.fret-numbers{display:flex;margin-bottom:3px;user-select:none;min-width:fit-content}
+.fret-numbers:last-of-type{margin-bottom:0;margin-top:3px}
+.fret-numbers .spacer{width:36px;min-width:36px}
+.fret-numbers span{width:50px;min-width:50px;text-align:center;font-size:0.6rem;color:var(--text-dim);position:relative}
+.fret-numbers span.has-dot::after{content:'●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25)}
+.fret-numbers span.has-double::after{content:'● ●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25);letter-spacing:2px}
+.fret-numbers span.has-dot-top::before{content:'●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25)}
+.fret-numbers span.has-double-top::before{content:'● ●';display:block;font-size:0.3rem;color:rgba(255,255,255,0.25);letter-spacing:2px}
+.fretboard{position:relative;background:linear-gradient(180deg,#3d2114 0%,#2c1810 30%,#241209 70%,#1e0f08 100%);border-radius:6px;padding:10px 0;overflow:visible;min-width:fit-content}
+.dot-markers{display:flex;height:0;position:relative;pointer-events:none;min-width:fit-content}
+.dot-markers .spacer{width:36px;min-width:36px}
+.dot-markers .dm-cell{width:50px;min-width:50px;position:relative;height:0}
+.dot-markers .dm-cell .dot{position:absolute;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(255,255,250,0.25) 0%,rgba(220,215,200,0.18) 40%,rgba(180,175,165,0.12) 70%,rgba(160,155,145,0.08) 100%);left:50%;transform:translateX(-50%);border:1px solid rgba(255,255,255,0.06)}
+.string-row{display:flex;align-items:center;height:34px;position:relative;min-width:fit-content}
+.string-label{width:36px;min-width:36px;text-align:center;font-size:0.62rem;font-weight:600;color:var(--text-dim);z-index:2}
+.fret-cell{width:50px;min-width:50px;height:34px;position:relative;display:flex;align-items:center;justify-content:center}
+.fret-cell.nut::after{content:'';position:absolute;right:0;top:0;bottom:0;width:4px;background:var(--nut);border-radius:1px;box-shadow:2px 0 6px rgba(0,0,0,0.4);z-index:1}
+.fret-cell:not(.nut)::after{content:'';position:absolute;right:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,rgba(200,185,170,0.4),var(--fret-wire),rgba(200,185,170,0.4));z-index:1}
+.string-row .string-line{position:absolute;left:36px;right:0;top:50%;transform:translateY(-50%);z-index:0;pointer-events:none}
+.note-dot{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:0.56rem;font-weight:700;z-index:3;position:relative;
+  transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1),filter 0.2s;cursor:pointer;
+  text-shadow:0 1px 2px rgba(0,0,0,0.3);box-shadow:0 2px 6px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.2);
+  animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) backwards;line-height:1;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;
+}
+.note-dot:hover{transform:scale(1.25);z-index:10}
+.note-dot.playing{transform:scale(1.35);filter:brightness(1.3);box-shadow:0 0 14px 3px currentColor}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.note-dot.root{background:var(--root);color:#fff;width:28px;height:28px;font-size:0.6rem}
+.note-dot.m2{background:var(--m2);color:#1a1a1e} .note-dot.M2{background:var(--M2);color:#1a1a1e}
+.note-dot.m3{background:var(--m3);color:#fff} .note-dot.M3{background:var(--M3);color:#fff}
+.note-dot.P4{background:var(--P4);color:#fff} .note-dot.TT{background:var(--TT);color:#fff}
+.note-dot.P5{background:var(--P5);color:#1a1a1e}
+.note-dot.m6{background:var(--m6);color:#1a1a1e} .note-dot.M6{background:var(--M6);color:#1a1a1e}
+.note-dot.m7{background:var(--m7);color:#1a1a1e} .note-dot.M7{background:var(--M7);color:#1a1a1e}
+
+/* ── Diatonic Chord Grid ── */
+.chord-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:12px 0}
+.chord-card{
+  background:var(--surface);border:2px solid rgba(255,255,255,0.06);border-radius:10px;
+  padding:12px;cursor:pointer;transition:all 0.2s;text-align:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.chord-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-2px)}
+.chord-card.active{border-color:var(--accent);background:rgba(230,57,70,0.08);box-shadow:0 4px 16px rgba(230,57,70,0.15)}
+.chord-card .degree{font-size:0.65rem;color:var(--text-dim);margin-bottom:4px}
+.chord-card .chord-name{font-size:1rem;font-weight:700}
+.chord-card .chord-notes{font-size:0.65rem;color:var(--text-dim);margin-top:4px}
+.chord-card .chord-type{font-size:0.6rem;color:var(--accent2);margin-top:2px}
+
+/* ── Chord-Scale Table ── */
+.cs-table{width:100%;border-collapse:collapse;margin:12px 0;font-size:0.75rem}
+.cs-table th{text-align:left;padding:8px 10px;border-bottom:2px solid rgba(255,255,255,0.1);color:var(--text-dim);font-weight:600;font-size:0.65rem;text-transform:uppercase;letter-spacing:1px}
+.cs-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.cs-table tr:hover td{background:rgba(255,255,255,0.02)}
+.cs-chord{font-weight:700;white-space:nowrap}
+.cs-scales{display:flex;flex-wrap:wrap;gap:4px}
+.cs-tag{background:var(--surface2);padding:3px 8px;border-radius:12px;font-size:0.65rem;cursor:pointer;transition:all 0.15s;border:1px solid rgba(255,255,255,0.04)}
+.cs-tag:hover{border-color:var(--accent);color:var(--accent)}
+.cs-tag.active-tag{background:rgba(230,57,70,0.15);border-color:var(--accent);color:var(--accent)}
+
+/* ── Chromatic Circle ── */
+.circle-container{display:flex;justify-content:center;align-items:center;padding:20px 0;flex-wrap:wrap;gap:20px}
+.circle-svg{max-width:380px;width:100%}
+.circle-note{cursor:pointer;transition:transform 0.15s,filter 0.15s}
+.circle-note:hover{filter:brightness(1.3)}
+.circle-note.active-note{filter:brightness(1.4) drop-shadow(0 0 6px currentColor)}
+.circle-info{font-size:0.75rem;color:var(--text-dim);max-width:250px}
+.circle-info h3{color:var(--text);font-size:0.9rem;margin-bottom:6px}
+.circle-info .ci-notes{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.circle-info .ci-note{padding:3px 8px;border-radius:12px;font-size:0.7rem;font-weight:600}
+
+/* ── Mobile ── */
+@media(max-width:768px){
+  .app{padding:10px}
+  header{flex-direction:column;align-items:stretch;gap:8px}
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%}
+  select{min-width:0;width:100%;font-size:16px;padding:8px 26px 8px 8px}
+  .chord-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}
+  .chord-card{padding:8px}
+  .chord-card .chord-name{font-size:0.85rem}
+  .cs-table{font-size:0.65rem}
+  .fret-numbers .spacer,.dot-markers .spacer,.string-label{width:28px;min-width:28px;font-size:0.55rem}
+  .fret-numbers span,.dot-markers .dm-cell,.fret-cell{width:42px;min-width:42px}
+  .fret-cell{height:32px} .string-row{height:32px}
+  .string-row .string-line{left:28px}
+  .note-dot{width:24px;height:24px;font-size:0.5rem}
+  .note-dot.root{width:26px;height:26px;font-size:0.54rem}
+  .fret-numbers span{font-size:0.52rem}
+}
+  /* ── Site Nav ── */
+  .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
+  .nav-link{color:var(--text-dim);text-decoration:none;font-family:-apple-system,'SF Mono','Menlo',monospace;font-size:0.75rem;padding:6px 14px;border-radius:8px;background:var(--surface2);border:1px solid rgba(255,255,255,0.04);transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+  .nav-link:hover{color:var(--text);border-color:rgba(255,255,255,0.12)}
+  .nav-link.active{color:#e63946;background:rgba(230,57,70,0.1);border-color:#e63946}
+  @media(max-width:768px){.site-nav{padding:8px 10px}.nav-link{font-size:0.68rem;padding:5px 10px}}
+</style>
+</head>
+<body>
+<nav class="site-nav">
+  <a href="index.html" class="nav-link">🎸 Fretboard</a>
+  <a href="practice.html" class="nav-link">🎵 Practice</a>
+  <a href="theory.html" class="nav-link active">📖 Theory</a>
+</nav>
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">♯</div>
+      <h1>Theory Tools <span>/ 音楽理論</span></h1>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('diatonic',this)">🎹 ダイアトニック</button>
+    <button class="tab" onclick="switchTab('chordscale',this)">📖 コード⇔スケール</button>
+    <button class="tab" onclick="switchTab('circle',this)">⭕ サークル</button>
+  </div>
+
+  <!-- ════ Tab 1: Diatonic Chords ════ -->
+  <div class="tab-panel active" id="panel-diatonic">
+    <div class="controls" style="margin-bottom:10px">
+      <div class="control-group"><label>Key</label><select id="dia-key"></select></div>
+      <div class="control-group"><label>Scale</label>
+        <select id="dia-type">
+          <option value="major">Major / メジャー</option>
+          <option value="minor">Minor / マイナー</option>
+          <option value="hminor">Harm. Minor / ハーモニックマイナー</option>
+          <option value="mminor">Mel. Minor / メロディックマイナー</option>
+        </select>
+      </div>
+      <div class="control-group"><label>Voicing</label>
+        <select id="dia-voicing">
+          <option value="triad">Triad / 三和音</option>
+          <option value="7th">7th / 四和音</option>
+          <option value="9th">9th / 五和音</option>
+          <option value="6th">6th</option>
+          <option value="add9">Add9</option>
+        </select>
+      </div>
+      <div class="control-group"><label>Strings</label>
+        <select id="dia-strings"><option value="6">6弦</option><option value="7">7弦</option></select>
+      </div>
+      <div class="control-group"><label>Frets</label>
+        <select id="dia-frets"><option value="12">12</option><option value="15" selected>15</option><option value="17">17</option><option value="22">22</option><option value="24">24</option></select>
+      </div>
+    </div>
+    <div class="chord-grid" id="dia-grid"></div>
+    <div class="fretboard-container">
+      <div class="fretboard-inner">
+        <div class="fret-numbers" id="dia-fretNums"></div>
+        <div class="fretboard" id="dia-fretboard"></div>
+        <div class="fret-numbers" id="dia-fretNumsB"></div>
+      </div>
+    </div>
+    <div id="dia-info" style="text-align:center;margin-top:8px;font-size:0.75rem;color:var(--text-dim)"></div>
+  </div>
+
+  <!-- ════ Tab 2: Chord-Scale ════ -->
+  <div class="tab-panel" id="panel-chordscale">
+    <div class="controls" style="margin-bottom:10px">
+      <div class="control-group"><label>Key</label><select id="cs-key"></select></div>
+      <div class="control-group"><label>Strings</label>
+        <select id="cs-strings"><option value="6">6弦</option><option value="7">7弦</option></select>
+      </div>
+      <div class="control-group"><label>Frets</label>
+        <select id="cs-frets"><option value="12">12</option><option value="15" selected>15</option><option value="17">17</option><option value="22">22</option><option value="24">24</option></select>
+      </div>
+    </div>
+    <div style="overflow-x:auto"><table class="cs-table" id="cs-table"></table></div>
+    <div class="fretboard-container" style="margin-top:12px">
+      <div class="fretboard-inner">
+        <div class="fret-numbers" id="cs-fretNums"></div>
+        <div class="fretboard" id="cs-fretboard"></div>
+        <div class="fret-numbers" id="cs-fretNumsB"></div>
+      </div>
+    </div>
+    <div id="cs-info" style="text-align:center;margin-top:8px;font-size:0.75rem;color:var(--text-dim)"></div>
+  </div>
+
+  <!-- ════ Tab 3: Chromatic Circle ════ -->
+  <div class="tab-panel" id="panel-circle">
+    <div class="controls" style="margin-bottom:10px">
+      <div class="control-group"><label>Key</label><select id="cr-key"></select></div>
+      <div class="control-group"><label>Scale</label><select id="cr-scale"></select></div>
+    </div>
+    <div class="circle-container">
+      <svg class="circle-svg" id="cr-svg" viewBox="0 0 400 400"></svg>
+      <div class="circle-info" id="cr-info"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const FLAT_MAP={'C#':'D♭','D#':'E♭','F#':'G♭','G#':'A♭','A#':'B♭'};
+const TUNING_6=[4,9,2,7,11,4],NAMES_6=['E','A','D','G','B','e'],WIDTHS_6=[2.8,2.3,1.8,1.4,1.1,0.9],COLORS_6=['#928880','#9c9286','#a69c90','#b0a69a','#bab0a4','#c4b8ac'];
+const TUNING_7=[11,4,9,2,7,11,4],NAMES_7=['B','E','A','D','G','B','e'],WIDTHS_7=[3.2,2.8,2.3,1.8,1.4,1.1,0.9],COLORS_7=['#88807a','#928880','#9c9286','#a69c90','#b0a69a','#bab0a4','#c4b8ac'];
+const FREQ_6=[82.41,110,146.83,196,246.94,329.63],FREQ_7=[61.74,82.41,110,146.83,196,246.94,329.63];
+const FRET_S=new Set([3,5,7,9,15,17,19,21]),FRET_D=new Set([12,24]);
+const DCSS={'R':'root','m2':'m2','M2':'M2','m3':'m3','M3':'M3','P4':'P4','TT':'TT','P5':'P5','m6':'m6','M6':'M6','m7':'m7','M7':'M7'};
+const DJP={'R':'ルート','m2':'短2','M2':'長2','m3':'短3','M3':'長3','P4':'完全4','TT':'トライトーン','P5':'完全5','m6':'短6','M6':'長6','m7':'短7','M7':'長7'};
+
+const SCALES={
+  'Major':{i:[0,2,4,5,7,9,11],d:['R','M2','M3','P4','P5','M6','M7']},
+  'Natural Minor':{i:[0,2,3,5,7,8,10],d:['R','M2','m3','P4','P5','m6','m7']},
+  'Harmonic Minor':{i:[0,2,3,5,7,8,11],d:['R','M2','m3','P4','P5','m6','M7']},
+  'Melodic Minor':{i:[0,2,3,5,7,9,11],d:['R','M2','m3','P4','P5','M6','M7']},
+  'Major Penta':{i:[0,2,4,7,9],d:['R','M2','M3','P5','M6']},
+  'Minor Penta':{i:[0,3,5,7,10],d:['R','m3','P4','P5','m7']},
+  'Blues':{i:[0,3,5,6,7,10],d:['R','m3','P4','TT','P5','m7']},
+  'Dorian':{i:[0,2,3,5,7,9,10],d:['R','M2','m3','P4','P5','M6','m7']},
+  'Mixolydian':{i:[0,2,4,5,7,9,10],d:['R','M2','M3','P4','P5','M6','m7']},
+  'Phrygian':{i:[0,1,3,5,7,8,10],d:['R','m2','m3','P4','P5','m6','m7']},
+  'Lydian':{i:[0,2,4,6,7,9,11],d:['R','M2','M3','TT','P5','M6','M7']},
+  'Locrian':{i:[0,1,3,5,6,8,10],d:['R','m2','m3','P4','TT','m6','m7']},
+};
+
+// Diatonic chord structures - each scale type has its own set
+// Format: {deg, label, iv (intervals from chord root), d (degree names)}
+// Voicing layers: triad → 7th → 9th → 6th → add9
+
+const SCALE_DEGREES={
+  major:  [0,2,4,5,7,9,11],
+  minor:  [0,2,3,5,7,8,10],
+  hminor: [0,2,3,5,7,8,11],
+  mminor: [0,2,3,5,7,9,11],
+};
+
+const DEGREE_LABELS={
+  major:  ['I','ii','iii','IV','V','vi','vii°'],
+  minor:  ['i','ii°','III','iv','v','VI','VII'],
+  hminor: ['i','ii°','III+','iv','V','VI','vii°'],
+  mminor: ['i','ii','III+','IV','V','vi°','vii°'],
+};
+
+// Build chord intervals from scale. Given a scale and a degree index,
+// stack 3rds (every other scale note) to build triad, 7th, 9th
+function buildDiaChords(scaleType){
+  const sc=SCALE_DEGREES[scaleType];
+  const labels=DEGREE_LABELS[scaleType];
+  const result=[];
+  for(let deg=0;deg<7;deg++){
+    const root=sc[deg];
+    // Get notes by stacking 3rds from this degree
+    const n1=sc[deg], n2=sc[(deg+2)%7], n3=sc[(deg+4)%7], n4=sc[(deg+6)%7], n5=sc[(deg+1)%7]; // 9th=2nd
+    // Normalize intervals relative to root
+    const i2=((n2-n1)+12)%12, i3=((n3-n1)+12)%12, i4=((n4-n1)+12)%12;
+    const i9=((n5-n1)+12)%12; // 9th (=2nd from root)
+    const i6=((sc[(deg+5)%7]-n1)+12)%12; // 6th from root
+
+    // Determine chord quality from intervals
+    let triadType,sevType,fullLabel;
+    // Triad
+    if(i2===4&&i3===7) triadType='';        // Major
+    else if(i2===3&&i3===7) triadType='m';   // minor
+    else if(i2===3&&i3===6) triadType='dim';  // dim
+    else if(i2===4&&i3===8) triadType='aug';  // aug
+    else triadType='?';
+
+    // 7th
+    if(i4===11) sevType=triadType==='m'?'mMaj7':triadType===''?'Maj7':'?7';
+    else if(i4===10) sevType=triadType===''?'7':triadType==='m'?'m7':triadType==='dim'?'m7♭5':'?7';
+    else if(i4===9) sevType=triadType==='dim'?'dim7':'?7';
+    else sevType='?7';
+
+    // Fix aug7 naming
+    if(triadType==='aug'&&i4===11) sevType='augMaj7';
+    if(triadType==='aug'&&i4===10) sevType='aug7';
+
+    result.push({
+      deg:labels[deg], rootIv:root,
+      triad: {iv:[0,i2,i3], d:degNames(0,i2,i3), label:triadType||'Maj'},
+      '7th': {iv:[0,i2,i3,i4], d:degNames(0,i2,i3,i4), label:sevType},
+      '9th': {iv:[0,i2,i3,i4,i9], d:degNames(0,i2,i3,i4,i9), label:sevType.replace('Maj7','Maj9').replace('m7♭5','m9♭5').replace('dim7','dim9').replace('m7','m9').replace('mMaj7','mMaj9').replace(/^7$/,'9').replace('aug7','aug9').replace('augMaj7','augMaj9')},
+      '6th': {iv:[0,i2,i3,i6], d:degNames(0,i2,i3,i6), label:(triadType==='m'?'m6':triadType===''?'6':triadType+'6')},
+      'add9': {iv:[0,i9,i2,i3], d:degNames(0,i9,i2,i3), label:(triadType==='m'?'m(add9)':triadType===''?'add9':triadType+'(add9)')},
+    });
+  }
+  return result;
+}
+
+function degNames(...ivs){
+  const map={0:'R',1:'m2',2:'M2',3:'m3',4:'M3',5:'P4',6:'TT',7:'P5',8:'m6',9:'M6',10:'m7',11:'M7'};
+  return ivs.map(iv=>map[iv]||'?');
+}
+
+const DIA_DATA={};
+['major','minor','hminor','mminor'].forEach(t=>DIA_DATA[t]=buildDiaChords(t));
+
+const MAJOR_SCALE_IV=[0,2,4,5,7,9,11];
+const MINOR_SCALE_IV=[0,2,3,5,7,8,10];
+
+// Chord-scale relationships (expanded)
+const CHORD_SCALE_MAP={
+  'Maj':['Major','Lydian','Mixolydian','Major Penta'],
+  'm':['Natural Minor','Dorian','Phrygian','Minor Penta'],
+  'dim':['Locrian'],
+  'aug':['Melodic Minor (3rd mode)'],
+  'Maj7':['Major','Lydian'],
+  '7':['Mixolydian','Blues'],
+  'm7':['Dorian','Natural Minor','Phrygian','Minor Penta'],
+  'm7♭5':['Locrian'],
+  'dim7':['Harmonic Minor (7th mode)'],
+  'mMaj7':['Harmonic Minor','Melodic Minor'],
+  'augMaj7':['Melodic Minor (3rd mode)'],
+  'aug7':['Melodic Minor (7th mode)'],
+  'm9':['Dorian','Natural Minor'],
+  '9':['Mixolydian'],
+  'Maj9':['Major','Lydian'],
+  'm6':['Dorian','Melodic Minor'],
+  '6':['Major','Major Penta'],
+  'add9':['Major','Major Penta'],
+  'm(add9)':['Dorian','Natural Minor'],
+};
+
+const NOTE_COLORS=['var(--root)','var(--m2)','var(--M2)','var(--m3)','var(--M3)','var(--P4)','var(--TT)','var(--P5)','var(--m6)','var(--M6)','var(--m7)','var(--M7)'];
+
+// ── Audio ──
+let audioCtx=null;
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx}
+function playFreq(freq,vol=0.2){
+  const ctx=getCtx(),now=ctx.currentTime;
+  const m=ctx.createGain();m.connect(ctx.destination);
+  m.gain.setValueAtTime(0,now);m.gain.linearRampToValueAtTime(vol,now+0.008);
+  m.gain.exponentialRampToValueAtTime(vol*0.6,now+0.08);
+  m.gain.exponentialRampToValueAtTime(0.001,now+1.5);
+  [{r:1,g:1},{r:2,g:.5},{r:3,g:.25}].forEach(h=>{
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='triangle';o.frequency.setValueAtTime(freq*h.r,now);
+    g.gain.setValueAtTime(h.g,now);o.connect(g);g.connect(m);o.start(now);o.stop(now+1.8);
+  });
+}
+function playString(nStr,sIdx,fret,vol=0.15){
+  const freqs=+nStr===7?FREQ_7:FREQ_6;
+  playFreq(freqs[sIdx]*Math.pow(2,fret/12),vol);
+}
+
+// ── Tab switching ──
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Helpers ──
+function fillKeySelect(el){NOTES.forEach((n,i)=>{const o=document.createElement('option');o.value=i;o.textContent=FLAT_MAP[n]?`${n}/${FLAT_MAP[n]}`:n;el.appendChild(o)})}
+function fillScaleSelect(el){Object.keys(SCALES).forEach(name=>{const o=document.createElement('option');o.value=name;o.textContent=name;el.appendChild(o)})}
+
+// ── Fretboard Renderer ──
+function renderFB(fbId,fnId,fnBId,nStr,key,intervals,degrees,maxF=15){
+  const tuning=+nStr===7?TUNING_7:TUNING_6,names=+nStr===7?NAMES_7:NAMES_6,
+        widths=+nStr===7?WIDTHS_7:WIDTHS_6,colors=+nStr===7?COLORS_7:COLORS_6,ns=+nStr;
+  const map=new Map();intervals.forEach((iv,idx)=>map.set((key+iv)%12,degrees[idx]));
+
+  [fnId,fnBId].forEach((id,idx)=>{const el=document.getElementById(id);el.innerHTML='<div class="spacer"></div>';
+    for(let f=0;f<=maxF;f++){const s=document.createElement('span');s.textContent=f;
+      if(idx===0){if(FRET_D.has(f))s.className='has-double';else if(FRET_S.has(f))s.className='has-dot';}
+      else{if(FRET_D.has(f))s.className='has-double-top';else if(FRET_S.has(f))s.className='has-dot-top';}
+      el.appendChild(s);}
+  });
+
+  const fb=document.getElementById(fbId);fb.innerHTML='';
+  const strH=34,totalH=ns*strH;
+  const dm=document.createElement('div');dm.className='dot-markers';dm.innerHTML='<div class="spacer"></div>';
+  for(let f=0;f<=maxF;f++){const c=document.createElement('div');c.className='dm-cell';
+    if(FRET_S.has(f))c.innerHTML=`<div class="dot" style="top:${totalH/2-17}px"></div>`;
+    else if(FRET_D.has(f))c.innerHTML=`<div class="dot" style="top:${totalH*.25}px"></div><div class="dot" style="top:${totalH*.75}px"></div>`;
+    dm.appendChild(c);}
+  fb.appendChild(dm);
+
+  for(let s=ns-1;s>=0;s--){
+    const row=document.createElement('div');row.className='string-row';
+    const sl=document.createElement('div');sl.className='string-line';
+    sl.style.height=widths[s]+'px';sl.style.background=colors[s];sl.style.opacity='0.45';row.appendChild(sl);
+    const lb=document.createElement('div');lb.className='string-label';lb.textContent=names[s];row.appendChild(lb);
+    for(let f=0;f<=maxF;f++){
+      const cell=document.createElement('div');cell.className='fret-cell'+(f===0?' nut':'');
+      const ni=(tuning[s]+f)%12;
+      if(map.has(ni)){
+        const deg=map.get(ni),dot=document.createElement('div');
+        dot.className=`note-dot ${DCSS[deg]}`;dot.textContent=NOTES[ni];
+        dot.style.animationDelay=`${f*10}ms`;
+        const si=s,fi=f,ns2=nStr;let touched=false;
+        dot.addEventListener('touchstart',e=>{e.preventDefault();touched=true;playString(ns2,si,fi);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)},{passive:false});
+        dot.addEventListener('click',()=>{if(touched){touched=false;return}playString(ns2,si,fi);dot.classList.add('playing');setTimeout(()=>dot.classList.remove('playing'),300)});
+        cell.appendChild(dot);
+      }
+      row.appendChild(cell);
+    }
+    fb.appendChild(row);
+  }
+}
+
+// ══════════════════════════════
+// Tab 1: Diatonic Chords
+// ══════════════════════════════
+let diaSelected=0;
+
+function renderDiatonic(){
+  const key=+document.getElementById('dia-key').value;
+  const scaleType=document.getElementById('dia-type').value;
+  const voicing=document.getElementById('dia-voicing').value;
+  const nStr=document.getElementById('dia-strings').value;
+  const dia=DIA_DATA[scaleType];
+  const scaleIv=SCALE_DEGREES[scaleType];
+
+  if(diaSelected>=dia.length) diaSelected=0;
+
+  const grid=document.getElementById('dia-grid');grid.innerHTML='';
+  dia.forEach((ch,idx)=>{
+    const root=(key+ch.rootIv)%12;
+    const voiceData=ch[voicing];
+    const notes=voiceData.iv.map(iv=>NOTES[(root+iv)%12]);
+    const card=document.createElement('div');
+    card.className='chord-card'+(idx===diaSelected?' active':'');
+    card.innerHTML=`
+      <div class="degree">${ch.deg}</div>
+      <div class="chord-name">${NOTES[root]}${voiceData.label==='Maj'?'':voiceData.label}</div>
+      <div class="chord-notes">${notes.join(' - ')}</div>
+      <div class="chord-type">${voiceData.d.join(' ')}</div>`;
+    card.addEventListener('click',()=>{
+      diaSelected=idx;
+      renderDiatonic();
+      // Play chord
+      const baseFreq=261.63;
+      voiceData.iv.forEach((iv,i)=>setTimeout(()=>playFreq(baseFreq*Math.pow(2,(root+iv)/12),0.12),i*80));
+    });
+    grid.appendChild(card);
+  });
+
+  // Render selected chord on fretboard
+  const ch=dia[diaSelected];
+  const root=(key+ch.rootIv)%12;
+  const voiceData=ch[voicing];
+  renderFB('dia-fretboard','dia-fretNums','dia-fretNumsB',nStr,root,voiceData.iv,voiceData.d,+document.getElementById('dia-frets').value);
+
+  const voicingNames={triad:'Triad','7th':'7th','9th':'9th','6th':'6th','add9':'Add9'};
+  document.getElementById('dia-info').textContent=
+    `${NOTES[root]}${voiceData.label==='Maj'?'':voiceData.label} (${voicingNames[voicing]}) のコードトーンを表示中 — タップで音が出ます`;
+}
+
+// ══════════════════════════════
+// Tab 2: Chord-Scale
+// ══════════════════════════════
+let csActiveScale=null;
+
+function renderChordScale(){
+  const key=+document.getElementById('cs-key').value;
+  const table=document.getElementById('cs-table');
+  table.innerHTML='<thead><tr><th>Degree</th><th>Triad</th><th>7th</th><th>使えるスケール</th></tr></thead>';
+  const tbody=document.createElement('tbody');
+
+  const dia=DIA_DATA.major;
+  dia.forEach((ch,idx)=>{
+    const root=(key+ch.rootIv)%12;
+    const triad=ch.triad, sev=ch['7th'];
+    const tr=document.createElement('tr');
+
+    const triadName=`${NOTES[root]}${triad.label==='Maj'?'':triad.label}`;
+    const sevName=`${NOTES[root]}${sev.label}`;
+
+    tr.innerHTML=`<td style="color:var(--text-dim)">${ch.deg}</td><td class="cs-chord">${triadName}</td><td class="cs-chord">${sevName}</td><td></td>`;
+    const td=tr.querySelector('td:last-child');
+    const div=document.createElement('div');div.className='cs-scales';
+
+    // Look up scales for both triad type and 7th type
+    const scaleSet=new Set();
+    (CHORD_SCALE_MAP[sev.label]||[]).forEach(s=>scaleSet.add(s));
+    (CHORD_SCALE_MAP[triad.label==='Maj'?'Maj':triad.label]||[]).forEach(s=>scaleSet.add(s));
+
+    [...scaleSet].forEach(sc=>{
+      const tag=document.createElement('span');tag.className='cs-tag';
+      tag.textContent=sc;
+      tag.addEventListener('click',()=>{
+        document.querySelectorAll('.cs-tag').forEach(t=>t.classList.remove('active-tag'));
+        tag.classList.add('active-tag');
+        const scData=SCALES[sc];
+        if(scData){
+          const nStr=document.getElementById('cs-strings').value;
+          renderFB('cs-fretboard','cs-fretNums','cs-fretNumsB',nStr,root,scData.i,scData.d,+document.getElementById('cs-frets').value);
+          document.getElementById('cs-info').textContent=`${NOTES[root]} ${sc} を表示中（${sevName} 上で使用）`;
+        }
+      });
+      div.appendChild(tag);
+    });
+    td.appendChild(div);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  document.getElementById('cs-fretboard').innerHTML='';
+  document.getElementById('cs-info').textContent='スケール名をタップすると指板に表示されます';
+}
+
+// ══════════════════════════════
+// Tab 3: Chromatic Circle
+// ══════════════════════════════
+function renderCircle(){
+  const key=+document.getElementById('cr-key').value;
+  const scaleName=document.getElementById('cr-scale').value;
+  const sc=SCALES[scaleName];
+  const scaleNotes=new Set(sc.i.map(iv=>(key+iv)%12));
+
+  const svg=document.getElementById('cr-svg');
+  const cx=200,cy=200,r=160,rInner=120,rText=145;
+  let html='';
+
+  // Background circle
+  html+=`<circle cx="${cx}" cy="${cy}" r="${r+10}" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+
+  // Draw connections between scale notes
+  const scalePositions=[];
+  for(let i=0;i<12;i++){
+    if(scaleNotes.has(i)){
+      const angle=(i-3)*30*Math.PI/180;
+      scalePositions.push({ni:i,x:cx+r*Math.cos(angle),y:cy+r*Math.sin(angle)});
+    }
+  }
+  for(let i=0;i<scalePositions.length;i++){
+    const next=scalePositions[(i+1)%scalePositions.length];
+    html+=`<line x1="${scalePositions[i].x}" y1="${scalePositions[i].y}" x2="${next.x}" y2="${next.y}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`;
+  }
+
+  // Draw root-to-P5 line
+  const rootAngle=(key-3)*30*Math.PI/180;
+  const p5=(key+7)%12;
+  const p5Angle=(p5-3)*30*Math.PI/180;
+  if(scaleNotes.has(p5)){
+    html+=`<line x1="${cx+r*Math.cos(rootAngle)}" y1="${cy+r*Math.sin(rootAngle)}" x2="${cx+r*Math.cos(p5Angle)}" y2="${cy+r*Math.sin(p5Angle)}" stroke="var(--P5)" stroke-width="2" opacity="0.3"/>`;
+  }
+
+  // Notes
+  for(let i=0;i<12;i++){
+    const angle=(i-3)*30*Math.PI/180;
+    const x=cx+r*Math.cos(angle);
+    const y=cy+r*Math.sin(angle);
+    const inScale=scaleNotes.has(i);
+    const isRoot=i===key;
+    const noteR=isRoot?22:inScale?18:14;
+    const fill=isRoot?'var(--root)':inScale?NOTE_COLORS[((i-key+12)%12)]:'var(--surface2)';
+    const textFill=inScale?'#fff':'var(--text-dim)';
+    const opacity=inScale?1:0.4;
+
+    html+=`<g class="circle-note${inScale?' active-note':''}" opacity="${opacity}">`;
+    html+=`<circle cx="${x}" cy="${y}" r="${noteR}" fill="${fill}" stroke="rgba(255,255,255,${inScale?0.15:0.06})" stroke-width="1.5"/>`;
+    html+=`<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="central" fill="${textFill}" font-size="${isRoot?14:12}" font-weight="${isRoot?700:600}" font-family="-apple-system,monospace">${NOTES[i]}</text>`;
+    html+=`</g>`;
+
+    // Degree label for scale notes
+    if(inScale){
+      const degIdx=sc.i.indexOf((i-key+12)%12);
+      if(degIdx>=0){
+        const lx=cx+rInner*Math.cos(angle);
+        const ly=cy+rInner*Math.sin(angle);
+        html+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" fill="var(--text-dim)" font-size="9" font-family="-apple-system,monospace">${sc.d[degIdx]}</text>`;
+      }
+    }
+  }
+
+  // Center text
+  html+=`<text x="${cx}" y="${cy-8}" text-anchor="middle" fill="var(--text)" font-size="18" font-weight="700" font-family="-apple-system,monospace">${NOTES[key]}</text>`;
+  html+=`<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="var(--text-dim)" font-size="11" font-family="-apple-system,monospace">${scaleName}</text>`;
+
+  svg.innerHTML=html;
+
+  // Info panel
+  const info=document.getElementById('cr-info');
+  const notesList=sc.i.map((iv,idx)=>{
+    const ni=(key+iv)%12;
+    return `<span class="ci-note" style="background:${NOTE_COLORS[iv]};color:${['var(--root)','var(--m2)','var(--M2)'].includes(NOTE_COLORS[iv])||iv>=5?'#1a1a1e':'#fff'}">${NOTES[ni]} (${sc.d[idx]})</span>`;
+  }).join('');
+
+  const halfSteps=[];
+  for(let i=0;i<sc.i.length;i++){
+    const next=sc.i[(i+1)%sc.i.length];
+    const diff=((next||12)-sc.i[i]+12)%12;
+    halfSteps.push(diff);
+  }
+
+  info.innerHTML=`
+    <h3>${NOTES[key]} ${scaleName}</h3>
+    <div class="ci-notes">${notesList}</div>
+    <p style="margin-top:8px">音程パターン: ${halfSteps.join(' - ')}</p>
+    <p style="margin-top:4px">構成音数: ${sc.i.length}音</p>`;
+}
+
+// ── Init ──
+function init(){
+  ['dia-key','cs-key','cr-key'].forEach(id=>fillKeySelect(document.getElementById(id)));
+  fillScaleSelect(document.getElementById('cr-scale'));
+
+  ['dia-key','dia-type','dia-voicing','dia-strings','dia-frets'].forEach(id=>document.getElementById(id).addEventListener('change',renderDiatonic));
+  ['cs-key','cs-strings','cs-frets'].forEach(id=>document.getElementById(id).addEventListener('change',renderChordScale));
+  ['cr-key','cr-scale'].forEach(id=>document.getElementById(id).addEventListener('change',renderCircle));
+
+  renderDiatonic();
+  renderChordScale();
+  renderCircle();
+}
+init();
+</script>
+</body>
+</html>

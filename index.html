@@ -152,9 +152,20 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
   .nd{width:22px;height:22px;font-size:.48rem}.nd.root{width:24px;height:24px}
   .br{margin-top:4px;gap:6px}.lg{margin-top:4px}
 }
+  /* ── Site Nav ── */
+  .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
+  .nav-link{color:var(--text-dim);text-decoration:none;font-family:-apple-system,'SF Mono','Menlo',monospace;font-size:0.75rem;padding:6px 14px;border-radius:8px;background:var(--surface2);border:1px solid rgba(255,255,255,0.04);transition:all 0.2s;-webkit-tap-highlight-color:transparent}
+  .nav-link:hover{color:var(--text);border-color:rgba(255,255,255,0.12)}
+  .nav-link.active{color:#e63946;background:rgba(230,57,70,0.1);border-color:#e63946}
+  @media(max-width:768px){.site-nav{padding:8px 10px}.nav-link{font-size:0.68rem;padding:5px 10px}}
 </style>
 </head>
 <body>
+<nav class="site-nav">
+  <a href="index.html" class="nav-link active">🎸 Fretboard</a>
+  <a href="practice.html" class="nav-link">🎵 Practice</a>
+  <a href="theory.html" class="nav-link">📖 Theory</a>
+</nav>
 <div class="app">
   <header>
     <div class="logo">
