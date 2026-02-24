@@ -154,10 +154,10 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
 }
   /* ── Site Nav ── */
   .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
-  .nav-link{color:var(--text-dim);text-decoration:none;font-family:-apple-system,'SF Mono','Menlo',monospace;font-size:0.75rem;padding:6px 14px;border-radius:8px;background:var(--surface2);border:1px solid rgba(255,255,255,0.04);transition:all 0.2s;-webkit-tap-highlight-color:transparent}
-  .nav-link:hover{color:var(--text);border-color:rgba(255,255,255,0.12)}
-  .nav-link.active{color:#e63946;background:rgba(230,57,70,0.1);border-color:#e63946}
-  @media(max-width:768px){.site-nav{padding:8px 10px}.nav-link{font-size:0.68rem;padding:5px 10px}}
+  .nav-link{color:var(--txd);text-decoration:none;font-family:inherit;font-size:.75rem;padding:6px 14px;border-radius:8px;background:var(--sf2);border:1px solid rgba(255,255,255,.04);transition:all .2s;-webkit-tap-highlight-color:transparent}
+  .nav-link:hover{color:var(--tx);border-color:rgba(255,255,255,.12)}
+  .nav-link.active{color:#e63946;background:rgba(230,57,70,.1);border-color:#e63946}
+  @media(max-width:768px){.site-nav{padding:8px 10px}.nav-link{font-size:.68rem;padding:5px 10px}}
 </style>
 </head>
 <body>
@@ -183,7 +183,7 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
         <select id="sR"><option value="6">6弦</option><option value="7">7弦</option></select>
       </div>
       <div class="cg"><label>Frets</label>
-        <select id="sF"><option value="12">12</option><option value="15" selected>15</option><option value="17">17</option><option value="22">22</option><option value="24">24</option></select>
+        <select id="sF"><option value="12">12</option><option value="15">15</option><option value="17">17</option><option value="22">22</option><option value="24" selected>24</option></select>
       </div>
     </div>
   </header>
@@ -251,7 +251,7 @@ var CH={
 var DC={'R':'root','m2':'m2','M2':'M2','m3':'m3','M3':'M3','P4':'P4','TT':'TT','P5':'P5','m6':'m6','M6':'M6','m7':'m7','M7':'M7'};
 var DJ={'R':'ルート','m2':'短2','M2':'長2','m3':'短3','M3':'長3','P4':'完全4','TT':'トライトーン','P5':'完全5','m6':'短6','M6':'長6','m7':'短7','M7':'長7'};
 var FS=new Set([3,5,7,9,15,17,19,21]),FD=new Set([12,24]);
-var md='scale',ky=0,sc=Object.keys(SC)[0],ch=Object.keys(CH)[0],ns=6,fr=15,dp='note';
+var md='scale',ky=0,sc=Object.keys(SC)[0],ch=Object.keys(CH)[0],ns=6,fr=24,dp='note';
 
 // Audio
 var ax=null;
