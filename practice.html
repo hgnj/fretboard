@@ -70,6 +70,16 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
 .trfb{font-size:1.2rem;margin:8px 0;min-height:32px}
 .trnx{background:var(--root);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-family:inherit;font-size:.85rem;cursor:pointer;margin-top:12px;-webkit-tap-highlight-color:transparent}
 .trli{background:var(--P4);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 2px 8px rgba(69,123,157,.3)}
+.smt{display:flex;gap:3px;background:var(--sf);border-radius:9px;padding:3px;margin-bottom:12px;width:fit-content}
+.smb{background:transparent;color:var(--txd);border:none;border-radius:6px;padding:7px 14px;font-family:inherit;font-size:.75rem;cursor:pointer;transition:all .2s;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.smb:hover{color:var(--tx)}.smb.on{background:rgba(230,57,70,.15);color:var(--root);font-weight:600}
+.klr{display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:var(--sf);border-radius:9px;border:1px solid rgba(255,255,255,.04);flex-wrap:wrap}
+.klr label{font-size:.75rem;color:var(--txd)}.klr select{min-width:100px}
+.trh{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px}
+.rbtn{background:transparent;color:var(--txd);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:5px 12px;font-family:inherit;font-size:.7rem;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.rbtn:hover{border-color:rgba(255,255,255,.2);color:var(--tx)}
+.streak{display:inline-block;background:linear-gradient(135deg,#f4a261,#e63946);color:#fff;padding:2px 9px;border-radius:11px;font-size:.68rem;font-weight:600;margin-left:8px;animation:pop .3s cubic-bezier(.34,1.56,.64,1)}
+.trfb.ok{color:#06d6a0}.trfb.ng{color:var(--root)}
 .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
 .nav-link{color:var(--txd);text-decoration:none;font-family:inherit;font-size:.75rem;padding:6px 14px;border-radius:8px;background:var(--sf2);border:1px solid rgba(255,255,255,.04);transition:all .2s;-webkit-tap-highlight-color:transparent}
 .nav-link:hover{color:var(--tx);border-color:rgba(255,255,255,.12)}.nav-link.active{color:#e63946;background:rgba(230,57,70,.1);border-color:#e63946}
@@ -86,6 +96,7 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
     <button class="tab on" onclick="stab('ap',this)">🎵 スケール再生</button>
     <button class="tab" onclick="stab('cmp',this)">🔀 スケール比較</button>
     <button class="tab" onclick="stab('iv',this)">🎯 インターバル</button>
+    <button class="tab" onclick="stab('ch',this)">🎵 コード判別</button>
   </div>
   <div class="tp on" id="tp-ap">
     <div class="ctrls" style="margin-bottom:10px">
@@ -117,13 +128,39 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
   </div>
   <div class="tp" id="tp-iv">
     <div class="tra">
-      <p style="color:var(--txd);font-size:.82rem">2つの音のインターバル（音程）を当てよう</p>
+      <div class="trh">
+        <div class="smt"><button class="smb on" onclick="setIvM('fixed',this)">🔒 キー固定</button><button class="smb" onclick="setIvM('random',this)">🎲 ランダム</button></div>
+        <button class="rbtn" onclick="rstIv()">リセット</button>
+      </div>
+      <div class="klr" id="iv-klr">
+        <span>🔑</span><label>Key:</label><select id="iv-k"></select>
+        <label>Scale:</label><select id="iv-sc"></select>
+      </div>
+      <p style="color:var(--txd);font-size:.82rem" id="iv-desc">スケール内の2音のインターバルを当てよう（キー固定）</p>
       <div class="trq" id="iv-q"></div>
       <div style="margin:8px 0"><button class="trli" onclick="rpIv()">🔊</button></div>
       <div class="trfb" id="iv-fb"></div>
       <div class="tro" id="iv-opts"></div>
-      <div class="trs">スコア: <strong id="iv-ok">0</strong> / <span id="iv-tt">0</span><span id="iv-st" style="margin-left:12px;color:var(--root)"></span></div>
+      <div class="trs">スコア: <strong id="iv-ok">0</strong> / <span id="iv-tt">0</span><span id="iv-st"></span></div>
       <button class="trnx" id="iv-nx" onclick="newIv()" style="display:none">次の問題 →</button>
+    </div>
+  </div>
+  <div class="tp" id="tp-ch">
+    <div class="tra">
+      <div class="trh">
+        <div class="smt"><button class="smb on" onclick="setChM('fixed',this)">🔒 キー固定</button><button class="smb" onclick="setChM('random',this)">🎲 ランダム</button></div>
+        <button class="rbtn" onclick="rstCh()">リセット</button>
+      </div>
+      <div class="klr" id="ch-klr">
+        <span>🔑</span><label>Key:</label><select id="ch-k"></select>
+      </div>
+      <p style="color:var(--txd);font-size:.82rem" id="ch-desc">ダイアトニックコードを聴き取ろう（キー固定）</p>
+      <div class="trq" id="ch-q"></div>
+      <div style="margin:8px 0"><button class="trli" onclick="rpCh()">🔊</button></div>
+      <div class="trfb" id="ch-fb"></div>
+      <div class="tro" id="ch-opts"></div>
+      <div class="trs">スコア: <strong id="ch-ok">0</strong> / <span id="ch-tt">0</span><span id="ch-st"></span></div>
+      <button class="trnx" id="ch-nx" onclick="newCh()" style="display:none">次の問題 →</button>
     </div>
   </div>
 </div>
@@ -142,7 +179,7 @@ function ac(){if(!ax)try{ax=new(window.AudioContext||window.webkitAudioContext)}
 function pf(fq,v){var c=ac();if(!c)return;v=v||.2;var t=c.currentTime,m=c.createGain();m.connect(c.destination);m.gain.setValueAtTime(0,t);m.gain.linearRampToValueAtTime(v,t+.008);m.gain.exponentialRampToValueAtTime(Math.max(v*.6,.001),t+.08);m.gain.exponentialRampToValueAtTime(Math.max(v*.3,.001),t+.4);m.gain.exponentialRampToValueAtTime(.001,t+1.8);[{r:1,g:1},{r:2,g:.5},{r:3,g:.25},{r:4,g:.15},{r:5,g:.08}].forEach(function(h){var o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(fq*h.r,t);g.gain.setValueAtTime(h.g,t);o.connect(g);g.connect(m);o.start(t);o.stop(t+2)})}
 function ps(ns,si,f,v){var T=+ns===7?T7:T6;pf(T.h[si]*Math.pow(2,f/12),v||.2)}
 function bnd(d,ns,si,f,v){var tc=false;d.addEventListener('touchstart',function(e){e.preventDefault();tc=true;ps(ns,si,f,v);d.classList.add('pl');setTimeout(function(){d.classList.remove('pl')},300)},{passive:false});d.addEventListener('click',function(){if(tc){tc=false;return}ps(ns,si,f,v);d.classList.add('pl');setTimeout(function(){d.classList.remove('pl')},300)})}
-function stab(id,el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('on')});document.getElementById('tp-'+id).classList.add('on');el.classList.add('on');if(id==='iv'&&ivT===0)newIv()}
+function stab(id,el){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on')});document.querySelectorAll('.tp').forEach(function(p){p.classList.remove('on')});document.getElementById('tp-'+id).classList.add('on');el.classList.add('on');if(id==='iv'&&ivT===0)newIv();if(id==='ch'&&chT===0)newCh()}
 function fk(el){N.forEach(function(n,i){var o=document.createElement('option');o.value=i;o.textContent=FM[n]?n+' / '+FM[n]:n;el.appendChild(o)})}
 function fsc(el){Object.keys(SC).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=k;el.appendChild(o)})}
 function rfb(fbId,ftId,fBId,ns,key,scD,maxF,opts){
@@ -166,11 +203,26 @@ function stopAP(){apOn=false;clearTimeout(apTm);document.getElementById('ap-pb')
 function playSq(){if(!apOn||!apDots.length)return;var bpm=+document.getElementById('ap-bpm').value,dl=60000/bpm,v=(+document.getElementById('ap-vol').value/100)*.3,ns=document.getElementById('ap-r').value;var sq=apDots.slice();if(apDir==='down')sq.reverse();else if(apDir==='both')sq=apDots.concat(apDots.slice().reverse().slice(1));var idx=0;(function step(){if(!apOn||idx>=sq.length){stopAP();return}var d=sq[idx];ps(ns,d.s,d.f,v);d.dot.classList.add('pl');setTimeout(function(){d.dot.classList.remove('pl')},Math.min(dl*.8,300));idx++;apTm=setTimeout(step,dl)})()}
 function sdir(d){apDir=d;['up','down','both'].forEach(function(x){document.getElementById('ap-d'+x[0]).classList.toggle('on',x===d)})}
 function rCMP(){var key=+document.getElementById('cmp-k').value,scA=SC[document.getElementById('cmp-a').value],scB=SC[document.getElementById('cmp-b').value],ns=document.getElementById('cmp-r').value,fr=+document.getElementById('cmp-f').value;rfb('cmp-fb','cmp-ft','cmp-fB',ns,key,scA,fr,{scB:scB});var sA=new Set(scA.i.map(function(iv){return(key+iv)%12})),sBs=new Set(scB.i.map(function(iv){return(key+iv)%12}));var com=[];sA.forEach(function(n){if(sBs.has(n))com.push(N[n])});var nA=document.getElementById('cmp-a').value.split('/')[0].trim(),nB=document.getElementById('cmp-b').value.split('/')[0].trim();document.getElementById('cmp-nf').innerHTML=N[key]+' '+nA+' vs '+nB+' — 共通音: '+com.length+'/'+Math.max(sA.size,sBs.size)+' ('+com.join(', ')+')'}
-var ivOk=0,ivT=0,ivSk=0,ivN1=0,ivAns=-1;
-function newIv(){ivN1=Math.floor(Math.random()*12);var st=Math.floor(Math.random()*12)+1;ivAns=st;var q=document.getElementById('iv-q');q.innerHTML='<div class="trn" style="background:'+NC[ivN1]+'">'+N[ivN1]+'</div><span style="color:var(--txd);font-size:1.5rem">→</span><div class="trn" style="background:'+NC[(ivN1+st)%12]+'">'+N[(ivN1+st)%12]+'</div>';document.getElementById('iv-fb').textContent='';document.getElementById('iv-nx').style.display='none';setTimeout(rpIv,300);var opts=document.getElementById('iv-opts');opts.innerHTML='';var ch=new Set([st]);while(ch.size<4)ch.add(Math.floor(Math.random()*12)+1);var arr=[];ch.forEach(function(v){arr.push(v)});arr.sort(function(a,b){return a-b});arr.forEach(function(c){var btn=document.createElement('button');btn.className='trb';btn.textContent=IVS[c-1].n;btn.addEventListener('click',function(){chkIv(c,btn)});opts.appendChild(btn)})}
-function rpIv(){var bf=261.63;pf(bf*Math.pow(2,ivN1/12),.2);setTimeout(function(){pf(bf*Math.pow(2,(ivN1+ivAns)/12),.2)},500)}
-function chkIv(c,btn){ivT++;document.querySelectorAll('.trb').forEach(function(b){b.style.pointerEvents='none'});if(c===ivAns){ivOk++;ivSk++;btn.classList.add('ok');document.getElementById('iv-fb').textContent='✅ 正解！'}else{ivSk=0;btn.classList.add('ng');document.querySelectorAll('.trb').forEach(function(b){if(b.textContent===IVS[ivAns-1].n)b.classList.add('ok')});document.getElementById('iv-fb').textContent='❌ 正解は '+IVS[ivAns-1].n}document.getElementById('iv-ok').textContent=ivOk;document.getElementById('iv-tt').textContent=ivT;document.getElementById('iv-st').textContent=ivSk>=2?'🔥 '+ivSk+'連続！':'';document.getElementById('iv-nx').style.display='inline-block'}
-;(function(){['ap-k','cmp-k'].forEach(function(id){fk(document.getElementById(id))});['ap-s','cmp-a','cmp-b'].forEach(function(id){fsc(document.getElementById(id))});document.getElementById('cmp-b').selectedIndex=4;['ap-k','ap-s','ap-r','ap-f'].forEach(function(id){document.getElementById(id).addEventListener('change',function(){stopAP();rAP()})});['cmp-k','cmp-a','cmp-b','cmp-r','cmp-f'].forEach(function(id){document.getElementById(id).addEventListener('change',rCMP)});document.getElementById('ap-bpm').addEventListener('input',function(){document.getElementById('ap-bv').textContent=this.value});rAP();rCMP()})();
+var ivOk=0,ivT=0,ivSk=0,ivN1=0,ivAns=-1,ivMd='fixed',ivAd=false;
+var CTS=[{n:'Major / メジャー',i:[0,4,7],s:''},{n:'minor / マイナー',i:[0,3,7],s:'m'},{n:'dim / ディミニッシュ',i:[0,3,6],s:'dim'},{n:'aug / オーギュメント',i:[0,4,8],s:'aug'},{n:'sus4 / サスフォー',i:[0,5,7],s:'sus4'},{n:'sus2 / サスツー',i:[0,2,7],s:'sus2'},{n:'7 / セブンス',i:[0,4,7,10],s:'7'},{n:'m7 / マイナーセブンス',i:[0,3,7,10],s:'m7'},{n:'M7 / メジャーセブンス',i:[0,4,7,11],s:'M7'},{n:'mM7 / マイナーメジャー7',i:[0,3,7,11],s:'mM7'},{n:'dim7 / ディミニッシュ7',i:[0,3,6,9],s:'dim7'},{n:'m7♭5 / ハーフディミニッシュ',i:[0,3,6,10],s:'m7♭5'}];
+var DIA=[{dg:'I',o:0,t:0},{dg:'ii',o:2,t:1},{dg:'iii',o:4,t:1},{dg:'IV',o:5,t:0},{dg:'V',o:7,t:0},{dg:'vi',o:9,t:1},{dg:'vii°',o:11,t:2}];
+var chOk=0,chT=0,chSk=0,chRt=0,chTi=0,chMd='fixed',chAd=false;
+function setIvM(m,el){ivMd=m;el.parentNode.querySelectorAll('.smb').forEach(function(b){b.classList.remove('on')});el.classList.add('on');document.getElementById('iv-klr').style.display=m==='fixed'?'flex':'none';document.getElementById('iv-desc').textContent=m==='fixed'?'スケール内の2音のインターバルを当てよう（キー固定）':'2つの音のインターバルを当てよう（ランダム）';rstIv();newIv()}
+function setChM(m,el){chMd=m;el.parentNode.querySelectorAll('.smb').forEach(function(b){b.classList.remove('on')});el.classList.add('on');document.getElementById('ch-klr').style.display=m==='fixed'?'flex':'none';document.getElementById('ch-desc').textContent=m==='fixed'?'ダイアトニックコードを聴き取ろう（キー固定）':'コードの種類を聴き取ろう（ランダム）';rstCh();newCh()}
+function rstIv(){ivOk=0;ivT=0;ivSk=0;document.getElementById('iv-ok').textContent='0';document.getElementById('iv-tt').textContent='0';document.getElementById('iv-st').innerHTML=''}
+function rstCh(){chOk=0;chT=0;chSk=0;document.getElementById('ch-ok').textContent='0';document.getElementById('ch-tt').textContent='0';document.getElementById('ch-st').innerHTML=''}
+function newIv(){ivAd=false;if(ivMd==='fixed'){var key=+document.getElementById('iv-k').value,sc=SC[document.getElementById('iv-sc').value];if(!sc)return;var sns=sc.i.map(function(iv){return(key+iv)%12});var i1=Math.floor(Math.random()*sns.length),i2=i1;while(i2===i1)i2=Math.floor(Math.random()*sns.length);ivN1=sns[i1];ivAns=(sns[i2]-ivN1+12)%12}else{ivN1=Math.floor(Math.random()*12);ivAns=Math.floor(Math.random()*12)+1}
+var n2i=(ivN1+ivAns)%12;var q=document.getElementById('iv-q');q.innerHTML='<div class="trn" style="background:'+NC[ivN1]+'">'+N[ivN1]+'</div><span style="color:var(--txd);font-size:1.5rem">→</span><div class="trn" style="background:'+NC[n2i]+'">'+N[n2i]+'</div>';document.getElementById('iv-fb').textContent='';document.getElementById('iv-fb').className='trfb';document.getElementById('iv-nx').style.display='none';setTimeout(rpIv,300);
+var opts=document.getElementById('iv-opts');opts.innerHTML='';if(ivMd==='fixed'){var key=+document.getElementById('iv-k').value,sc=SC[document.getElementById('iv-sc').value],sns=sc.i.map(function(iv){return(key+iv)%12}),poss=new Set();for(var a=0;a<sns.length;a++)for(var b=0;b<sns.length;b++)if(a!==b)poss.add((sns[b]-sns[a]+12)%12);var ch=new Set([ivAns]),pa=[];poss.forEach(function(v){if(v!==ivAns)pa.push(v)});while(ch.size<Math.min(4,poss.size)&&pa.length>0){var ri=Math.floor(Math.random()*pa.length);ch.add(pa[ri]);pa.splice(ri,1)}var arr=[];ch.forEach(function(v){arr.push(v)});arr.sort(function(a,b){return a-b});arr.forEach(function(c){var btn=document.createElement('button');btn.className='trb';btn.textContent=c>=1&&c<=12?IVS[c-1].n:c+'半音';btn.addEventListener('click',function(){chkIv(c,btn)});opts.appendChild(btn)})}else{var ch=new Set([ivAns]);while(ch.size<4)ch.add(Math.floor(Math.random()*12)+1);var arr=[];ch.forEach(function(v){arr.push(v)});arr.sort(function(a,b){return a-b});arr.forEach(function(c){var btn=document.createElement('button');btn.className='trb';btn.textContent=IVS[c-1].n;btn.addEventListener('click',function(){chkIv(c,btn)});opts.appendChild(btn)})}}
+function rpIv(){var bf=261.63,f1=bf*Math.pow(2,ivN1/12),f2=bf*Math.pow(2,((ivN1+ivAns)%12)/12);if(f2<=f1)f2*=2;pf(f1,.2);setTimeout(function(){pf(f2,.2)},500)}
+function chkIv(c,btn){if(ivAd)return;ivAd=true;ivT++;document.querySelectorAll('#iv-opts .trb').forEach(function(b){b.style.pointerEvents='none'});var an=ivAns>=1&&ivAns<=12?IVS[ivAns-1].n:ivAns+'半音';if(c===ivAns){ivOk++;ivSk++;btn.classList.add('ok');document.getElementById('iv-fb').textContent='✅ 正解！';document.getElementById('iv-fb').className='trfb ok'}else{ivSk=0;btn.classList.add('ng');document.querySelectorAll('#iv-opts .trb').forEach(function(b){if(b.textContent===an)b.classList.add('ok')});document.getElementById('iv-fb').textContent='❌ 正解は '+an;document.getElementById('iv-fb').className='trfb ng'}document.getElementById('iv-ok').textContent=ivOk;document.getElementById('iv-tt').textContent=ivT;document.getElementById('iv-st').innerHTML=ivSk>=3?'<span class="streak">🔥 '+ivSk+'連続</span>':'';document.getElementById('iv-nx').style.display='inline-block'}
+function newCh(){chAd=false;if(chMd==='fixed'){var key=+document.getElementById('ch-k').value,di=DIA[Math.floor(Math.random()*DIA.length)];chRt=(key+di.o)%12;chTi=di.t}else{chRt=Math.floor(Math.random()*12);chTi=Math.floor(Math.random()*CTS.length)}
+var ct=CTS[chTi],notes=ct.i.map(function(iv){return(chRt+iv)%12});var q=document.getElementById('ch-q');var cols=['var(--root)','var(--P5)','var(--M3)','var(--P4)'];q.innerHTML=notes.map(function(n,i){return'<div class="trn" style="background:'+cols[i%4]+'">'+N[n]+'</div>'}).join('');
+document.getElementById('ch-fb').textContent='';document.getElementById('ch-fb').className='trfb';document.getElementById('ch-nx').style.display='none';setTimeout(rpCh,300);
+var opts=document.getElementById('ch-opts');opts.innerHTML='';if(chMd==='fixed'){var key=+document.getElementById('ch-k').value;var dcs=DIA.map(function(d){return{rt:(key+d.o)%12,ti:d.t,lbl:N[(key+d.o)%12]+CTS[d.t].s,dg:d.dg}});dcs.sort(function(){return Math.random()-.5});dcs.forEach(function(dc){var btn=document.createElement('button');btn.className='trb';btn.textContent=dc.lbl+' ('+dc.dg+')';btn.addEventListener('click',function(){chkCh(dc.rt,dc.ti,btn)});opts.appendChild(btn)})}else{var ch=new Set([chTi]);while(ch.size<Math.min(5,CTS.length))ch.add(Math.floor(Math.random()*CTS.length));var arr=[];ch.forEach(function(v){arr.push(v)});arr.sort(function(){return Math.random()-.5});arr.forEach(function(ci){var btn=document.createElement('button');btn.className='trb';btn.textContent=CTS[ci].n;btn.addEventListener('click',function(){chkCh(chRt,ci,btn)});opts.appendChild(btn)})}}
+function rpCh(){var bf=261.63,ct=CTS[chTi];ct.i.forEach(function(iv,i){setTimeout(function(){pf(bf*Math.pow(2,(chRt+iv)/12),.2)},i*120)});setTimeout(function(){ct.i.forEach(function(iv){pf(bf*Math.pow(2,(chRt+iv)/12),.15)})},ct.i.length*120+200)}
+function chkCh(rt,ti,btn){if(chAd)return;chAd=true;chT++;var ok=(rt===chRt&&ti===chTi);document.querySelectorAll('#ch-opts .trb').forEach(function(b){b.style.pointerEvents='none'});var cL=chMd==='fixed'?N[chRt]+CTS[chTi].s:CTS[chTi].n;if(ok){chOk++;chSk++;btn.classList.add('ok');document.getElementById('ch-fb').textContent='✅ 正解！';document.getElementById('ch-fb').className='trfb ok'}else{chSk=0;btn.classList.add('ng');document.getElementById('ch-fb').textContent='❌ 正解は '+cL;document.getElementById('ch-fb').className='trfb ng';document.querySelectorAll('#ch-opts .trb').forEach(function(b){if(chMd==='fixed'){if(b.textContent.indexOf(N[chRt]+CTS[chTi].s)===0)b.classList.add('ok')}else{if(b.textContent===CTS[chTi].n)b.classList.add('ok')}})}document.getElementById('ch-ok').textContent=chOk;document.getElementById('ch-tt').textContent=chT;document.getElementById('ch-st').innerHTML=chSk>=3?'<span class="streak">🔥 '+chSk+'連続</span>':'';document.getElementById('ch-nx').style.display='inline-block'}
+;(function(){['ap-k','cmp-k','iv-k','ch-k'].forEach(function(id){fk(document.getElementById(id))});['ap-s','cmp-a','cmp-b','iv-sc'].forEach(function(id){fsc(document.getElementById(id))});document.getElementById('cmp-b').selectedIndex=4;['ap-k','ap-s','ap-r','ap-f'].forEach(function(id){document.getElementById(id).addEventListener('change',function(){stopAP();rAP()})});['cmp-k','cmp-a','cmp-b','cmp-r','cmp-f'].forEach(function(id){document.getElementById(id).addEventListener('change',rCMP)});document.getElementById('ap-bpm').addEventListener('input',function(){document.getElementById('ap-bv').textContent=this.value});rAP();rCMP()})();
 </script>
 </body>
 </html>
