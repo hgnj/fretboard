@@ -74,12 +74,31 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
 .cri h3{color:var(--tx);font-size:.9rem;margin-bottom:6px}
 .cri .cin{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
 .cri .cin span{padding:3px 8px;border-radius:12px;font-size:.7rem;font-weight:600}
+/* Voice Leading */
+.vl-pair{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.vl-ch{background:var(--sf);border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,.04);min-width:180px}
+.vl-lbl{font-size:.65rem;color:var(--txd);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.vl-pbtn{background:none;border:none;font-size:.85rem;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:2px 4px;border-radius:4px;transition:background .15s}
+.vl-pbtn:hover{background:rgba(255,255,255,.08)}
+.vl-notes{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.vl-note{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .15s;-webkit-tap-highlight-color:transparent;user-select:none}
+.vl-note:hover{transform:scale(1.15)}
+.vl-res{background:var(--sf);border-radius:10px;padding:16px;border:1px solid rgba(255,255,255,.04);margin-top:16px}
+.vl-mv{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:.8rem}
+.vl-mn{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.2);flex-shrink:0}
+.vl-ar{min-width:40px;text-align:center;font-size:.85rem}.vl-ds{font-size:.72rem;color:var(--txd)}
+.vl-sc{font-size:.9rem;font-weight:600;margin-top:10px}.vl-sc span{color:var(--P5)}
+.vl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:8px}
+.vl-cd{background:var(--sf);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.vl-cd:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.vl-cd .vn{font-weight:700;font-size:.85rem}.vl-cd .vs2{font-size:.68rem;color:var(--P5);margin-top:3px}
+.vl-cd .vc2{font-size:.62rem;color:var(--txd);margin-top:2px}
 /* Nav */
 .site-nav{display:flex;gap:4px;padding:10px 16px;max-width:1440px;margin:0 auto}
 .nav-link{color:var(--txd);text-decoration:none;font-family:inherit;font-size:.75rem;padding:6px 14px;border-radius:8px;background:var(--sf2);border:1px solid rgba(255,255,255,.04);transition:all .2s;-webkit-tap-highlight-color:transparent}
 .nav-link:hover{color:var(--tx);border-color:rgba(255,255,255,.12)}.nav-link.active{color:#e63946;background:rgba(230,57,70,.1);border-color:#e63946}
 /* Mobile */
-@media(max-width:768px){.app{padding:12px;padding-top:env(safe-area-inset-top,12px)}header{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}.logo{justify-content:center}h1{font-size:1rem}h1 em{display:none}.ctrls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}.cg label{font-size:.55rem}select{min-width:0;width:100%;padding:10px 26px 10px 8px;font-size:16px;border-radius:10px}.fbw{padding:10px 6px 6px;border-radius:10px}.fn .sp,.dm .sp,.sl{width:30px;min-width:30px;font-size:.58rem}.fn span{width:44px;min-width:44px;font-size:.55rem}.dm .dc{width:44px;min-width:44px}.fc{width:44px;min-width:44px;height:34px}.sr{height:34px}.sn{left:30px}.nd{width:26px;height:26px;font-size:.52rem}.nd.root{width:28px;height:28px;font-size:.56rem}.cg2{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}.cc{padding:8px}.cc .cn{font-size:.85rem}.cst{font-size:.65rem}.site-nav{padding:8px 10px}.nav-link{font-size:.68rem;padding:5px 10px}}
+@media(max-width:768px){.app{padding:12px;padding-top:env(safe-area-inset-top,12px)}header{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}.logo{justify-content:center}h1{font-size:1rem}h1 em{display:none}.ctrls{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:7px}.cg label{font-size:.55rem}select{min-width:0;width:100%;padding:10px 26px 10px 8px;font-size:16px;border-radius:10px}.fbw{padding:10px 6px 6px;border-radius:10px}.fn .sp,.dm .sp,.sl{width:30px;min-width:30px;font-size:.58rem}.fn span{width:44px;min-width:44px;font-size:.55rem}.dm .dc{width:44px;min-width:44px}.fc{width:44px;min-width:44px;height:34px}.sr{height:34px}.sn{left:30px}.nd{width:26px;height:26px;font-size:.52rem}.nd.root{width:28px;height:28px;font-size:.56rem}.cg2{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px}.cc{padding:8px}.cc .cn{font-size:.85rem}.cst{font-size:.65rem}.vl-pair{gap:12px}.vl-ch{min-width:150px;padding:10px}.vl-note{width:32px;height:32px;font-size:.68rem}.vl-mn{width:28px;height:28px;font-size:.62rem}.vl-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}.site-nav{padding:8px 10px}.nav-link{font-size:.68rem;padding:5px 10px}}
 @media(max-width:380px){.fn span,.dm .dc,.fc{width:40px;min-width:40px}.fc{height:32px}.sr{height:32px}.nd{width:23px;height:23px;font-size:.48rem}.nd.root{width:25px;height:25px}}
 @media(max-height:500px)and(orientation:landscape){.app{padding:6px 10px}header{flex-direction:row;margin-bottom:6px;gap:6px}.ctrls{display:flex;gap:5px}select{padding:4px 22px 4px 6px;font-size:13px}.sr{height:30px}.fc{height:30px}.nd{width:22px;height:22px;font-size:.48rem}.nd.root{width:24px;height:24px}}
 </style>
@@ -92,6 +111,7 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
     <button class="tab on" onclick="stab('dia',this)">🎹 ダイアトニック</button>
     <button class="tab" onclick="stab('cs',this)">📖 コード⇔スケール</button>
     <button class="tab" onclick="stab('cr',this)">⭕ サークル</button>
+    <button class="tab" onclick="stab('vl',this)">🔗 ボイスリーディング</button>
   </div>
   <!-- Diatonic -->
   <div class="tp on" id="tp-dia">
@@ -130,6 +150,28 @@ select:focus{outline:none;border-color:var(--root);box-shadow:0 0 0 3px rgba(230
       <div class="cg"><label>Scale</label><select id="cr-s"></select></div>
     </div>
     <div class="crc"><svg id="cr-svg" viewBox="0 0 400 400"></svg><div class="cri" id="cr-info"></div></div>
+  </div>
+  <!-- Voice Leading -->
+  <div class="tp" id="tp-vl">
+    <div class="vl-pair">
+      <div class="vl-ch">
+        <div class="vl-lbl">Chord A <button class="vl-pbtn" onclick="vlPlayCh('a')">🔊</button></div>
+        <div style="display:flex;gap:6px"><select id="vl-ar"></select><select id="vl-at"></select></div>
+        <div class="vl-notes" id="vl-an"></div>
+      </div>
+      <div style="font-size:1.5rem;color:var(--txd);align-self:center;padding-top:20px">→</div>
+      <div class="vl-ch">
+        <div class="vl-lbl">Chord B <button class="vl-pbtn" onclick="vlPlayCh('b')">🔊</button></div>
+        <div style="display:flex;gap:6px"><select id="vl-br"></select><select id="vl-bt"></select></div>
+        <div class="vl-notes" id="vl-bn"></div>
+      </div>
+      <button class="vl-pbtn" style="align-self:center;padding-top:20px;font-size:.8rem" onclick="vlPlayBoth()">🔊 A→B</button>
+    </div>
+    <div class="vl-res" id="vl-res"></div>
+    <div style="margin-top:20px">
+      <div style="font-size:.82rem;color:var(--txd);margin-bottom:10px;font-weight:600">Chord A からの滑らかな接続先 TOP 12</div>
+      <div class="vl-grid" id="vl-sug"></div>
+    </div>
   </div>
 </div>
 <script>
@@ -248,14 +290,72 @@ function rCR(){
   var hs=[];for(var i=0;i<sc.i.length;i++){var nx=sc.i[(i+1)%sc.i.length]||12;hs.push(((nx||12)-sc.i[i]+12)%12)}
   info.innerHTML='<h3>'+N[key]+' '+sn+'</h3><div class="cin">'+nl+'</div><p style="margin-top:8px">音程パターン: '+hs.join(' - ')+'</p><p style="margin-top:4px">構成音数: '+sc.i.length+'音</p>'}
 
+// ═══ Voice Leading ═══
+var VCT={'':[0,4,7],'m':[0,3,7],'dim':[0,3,6],'aug':[0,4,8],'sus4':[0,5,7],'sus2':[0,2,7],'7':[0,4,7,10],'m7':[0,3,7,10],'M7':[0,4,7,11],'mM7':[0,3,7,11],'dim7':[0,3,6,9],'m7♭5':[0,3,6,10],'add9':[0,2,4,7],'6':[0,4,7,9],'m6':[0,3,7,9]};
+var VCTK=['','m','dim','aug','sus4','sus2','7','m7','M7','mM7','dim7','m7♭5','add9','6','m6'];
+var VCTL={'':'Major','m':'minor','dim':'dim','aug':'aug','sus4':'sus4','sus2':'sus2','7':'7','m7':'m7','M7':'M7','mM7':'mM7','dim7':'dim7','m7♭5':'m7♭5','add9':'add9','6':'6','m6':'m6'};
+function vlDist(a,b){var d=Math.abs(a-b);return Math.min(d,12-d)}
+function vlDir(a,b){if(a===b)return{d:0,s:'共通音'};var up=(b-a+12)%12,dn=(a-b+12)%12;if(up<=dn)return{d:up,s:up===1?'半音↑':up===2?'全音↑':up+'半音↑'};return{d:dn,s:dn===1?'半音↓':dn===2?'全音↓':dn+'半音↓'}}
+function vlMatch(na,nb){
+  var a=na.slice(),b=nb.slice(),m=[];
+  while(a.length&&b.length){var best={d:13,ai:-1,bi:-1};for(var i=0;i<a.length;i++)for(var j=0;j<b.length;j++){var d=vlDist(a[i],b[j]);if(d<best.d)best={d:d,ai:i,bi:j}};m.push({from:a[best.ai],to:b[best.bi]});a.splice(best.ai,1);b.splice(best.bi,1)}
+  a.forEach(function(n){m.push({from:n,to:-1})});b.forEach(function(n){m.push({from:-1,to:n})});
+  m.sort(function(x,y){return(x.from===-1?99:x.from)-(y.from===-1?99:y.from)});return m}
+function vlScore(na,nb){var s=0;na.forEach(function(a){var mn=12;nb.forEach(function(b){mn=Math.min(mn,vlDist(a,b))});s+=mn});return s}
+function vlTC(iv){return[0,3,4,5,6].indexOf(iv)>=0?'#fff':'#1a1a1e'}
+function vlPlayCh(ab){var r=+document.getElementById('vl-'+ab+'r').value,t=document.getElementById('vl-'+ab+'t').value,bf=261.63;VCT[t].forEach(function(iv,i){setTimeout(function(){pf(bf*Math.pow(2,(r+iv)/12),.12)},i*60)})}
+function vlPlayBoth(){vlPlayCh('a');setTimeout(function(){vlPlayCh('b')},600)}
+function rVL(){
+  var ra=+document.getElementById('vl-ar').value,ta=document.getElementById('vl-at').value;
+  var rb=+document.getElementById('vl-br').value,tb=document.getElementById('vl-bt').value;
+  var na=VCT[ta].map(function(iv){return(ra+iv)%12}),nb=VCT[tb].map(function(iv){return(rb+iv)%12});
+  // Render note circles
+  ['a','b'].forEach(function(ab){
+    var notes=ab==='a'?na:nb,root=ab==='a'?ra:rb,type=ab==='a'?ta:tb;
+    var el=document.getElementById('vl-'+ab+'n');el.innerHTML='';
+    notes.forEach(function(n){var iv=(n-root+12)%12;var dot=document.createElement('div');dot.className='vl-note';dot.style.background=NC[iv];dot.style.color=vlTC(iv);dot.textContent=N[n];dot.addEventListener('click',function(){pf(261.63*Math.pow(2,n/12),.15);dot.style.transform='scale(1.3)';setTimeout(function(){dot.style.transform=''},200)});el.appendChild(dot)});
+  });
+  // Voice movement analysis
+  var matches=vlMatch(na,nb),total=0,common=0;
+  var h='<div style="font-size:.82rem;font-weight:600;margin-bottom:8px">声部の動き</div>';
+  matches.forEach(function(m){
+    if(m.from===-1){var iv=(m.to-rb+12)%12;h+='<div class="vl-mv"><div class="vl-mn" style="background:var(--sf2);color:var(--txd)">+</div><div class="vl-ar" style="color:var(--txd)">←</div><div class="vl-mn" style="background:'+NC[iv]+';color:'+vlTC(iv)+'">'+N[m.to]+'</div><div class="vl-ds">追加</div></div>'}
+    else if(m.to===-1){var iv=(m.from-ra+12)%12;h+='<div class="vl-mv"><div class="vl-mn" style="background:'+NC[iv]+';color:'+vlTC(iv)+'">'+N[m.from]+'</div><div class="vl-ar" style="color:var(--txd)">→</div><div class="vl-mn" style="background:var(--sf2);color:var(--txd)">-</div><div class="vl-ds">消滅</div></div>'}
+    else{var dir=vlDir(m.from,m.to);total+=dir.d;if(dir.d===0)common++;var iva=(m.from-ra+12)%12,ivb=(m.to-rb+12)%12;var arSt=dir.d===0?'color:var(--P5);font-weight:700':'color:var(--txd)';h+='<div class="vl-mv"><div class="vl-mn" style="background:'+NC[iva]+';color:'+vlTC(iva)+'">'+N[m.from]+'</div><div class="vl-ar" style="'+arSt+'">'+(dir.d===0?'━━━':'──→')+'</div><div class="vl-mn" style="background:'+NC[ivb]+';color:'+vlTC(ivb)+'">'+N[m.to]+'</div><div class="vl-ds">'+dir.s+'</div></div>'}
+  });
+  var rating=total<=2?'非常に滑らか':total<=4?'滑らか':total<=6?'やや跳躍あり':'跳躍が多い';
+  var rCol=total<=2?'var(--m7)':total<=4?'var(--P5)':total<=6?'var(--txd)':'var(--root)';
+  h+='<div class="vl-sc">移動距離: <span>'+total+'半音</span> (共通音: '+common+')</div>';
+  h+='<div style="font-size:.75rem;color:'+rCol+';margin-top:4px">'+rating+'</div>';
+  document.getElementById('vl-res').innerHTML=h;
+  // Suggestions
+  var results=[];
+  for(var r=0;r<12;r++)for(var ti=0;ti<VCTK.length;ti++){var t=VCTK[ti],nb2=VCT[t].map(function(iv){return(r+iv)%12});var sc=vlScore(na,nb2);var cm=0;na.forEach(function(a){nb2.forEach(function(b){if(a===b)cm++})});results.push({r:r,t:t,sc:sc,cm:cm,nb:nb2})}
+  results.sort(function(a,b){return a.sc-b.sc||(b.cm-a.cm)});
+  results=results.filter(function(x){return x.r!==ra});
+  var grid=document.getElementById('vl-sug');grid.innerHTML='';
+  results.slice(0,12).forEach(function(item){
+    var card=document.createElement('div');card.className='vl-cd';
+    var name=N[item.r]+(item.t||'');
+    var cn=[];na.forEach(function(a){item.nb.forEach(function(b){if(a===b&&cn.indexOf(N[a])===-1)cn.push(N[a])})});
+    card.innerHTML='<div class="vn">'+name+'</div><div class="vs2">距離: '+item.sc+'半音</div><div class="vc2">共通音: '+(cn.length?cn.join(', '):'なし')+'</div>';
+    card.addEventListener('click',function(){document.getElementById('vl-br').value=item.r;document.getElementById('vl-bt').value=item.t;rVL();var bf=261.63;VCT[item.t].forEach(function(iv,i){setTimeout(function(){pf(bf*Math.pow(2,(item.r+iv)/12),.12)},i*60)})});
+    grid.appendChild(card)});
+}
+
 // Init
 ;(function(){
   ['dia-k','cs-k','cr-k'].forEach(function(id){fk(document.getElementById(id))});
   fsc(document.getElementById('cr-s'));
+  // Voice Leading selectors
+  ['vl-ar','vl-br'].forEach(function(id){fk(document.getElementById(id))});
+  ['vl-at','vl-bt'].forEach(function(id){var el=document.getElementById(id);VCTK.forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=VCTL[k];el.appendChild(o)});el.selectedIndex=0});
+  document.getElementById('vl-br').value=7; // default B=G (V)
   ['dia-k','dia-t','dia-v','dia-r','dia-f'].forEach(function(id){document.getElementById(id).addEventListener('change',rDia)});
   ['cs-k','cs-r','cs-f'].forEach(function(id){document.getElementById(id).addEventListener('change',rCS)});
   ['cr-k','cr-s'].forEach(function(id){document.getElementById(id).addEventListener('change',rCR)});
-  rDia();rCS();rCR()
+  ['vl-ar','vl-at','vl-br','vl-bt'].forEach(function(id){document.getElementById(id).addEventListener('change',rVL)});
+  rDia();rCS();rCR();rVL()
 })();
 </script>
 </body>
